@@ -178,4 +178,9 @@ set to $0.001 against a bookkeeping budget in the experiment database; the user'
 
 ## Amendments
 
-(none yet)
+1. **2026-11-10, pilot (plumbing only, data discarded).**
+   - What ran: 3 calibration tasks per suite × 3 strategies, plus 2 code tasks, on each model (87 trials).
+   - What it checked: every call finished normally, with no truncation (largest output: 921 of 2000 tokens for
+     gpt-oss-20b, 284 of 1000 for qwen3.8-27b, 256 of 1000 for gemini-3.5-flash-lite); no API or evaluation
+     errors; the Docker sandbox ran the code tests.
+   - **No operational setting was changed.**
