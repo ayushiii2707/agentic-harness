@@ -198,3 +198,14 @@ set to $0.001 against a bookkeeping budget in the experiment database; the user'
        one host. They stay in their own database, unused.
    - **Unchanged:** the model, generation settings, tasks, conditions and analysis. qwen3.8-27b and Gemini are
      unaffected.
+3. **2026-11-11, gemini-3.5-flash-lite moved to OpenRouter (before any held-out call).**
+   - **Why:** the Gemini free tier's daily request quota (about 500 requests) stopped calibration at 451 of 735
+     calls. Finishing on the free tier needed 3–4 more days, beyond the 3-day window.
+   - **Change,** approved by the owner after a corrected cost estimate:
+     - Model `google/gemini-3.5-flash-lite` on OpenRouter, pinned to Google AI Studio's flex tier (Google's own
+       backend, the one the free tier also uses), with fallbacks to other hosts disabled.
+     - Paid: a hard $1.50 budget, a $0.0015 reservation per call, and an expected total of about $0.70.
+     - The 451 free-tier calibration trials are **discarded**, so all of this model's data comes from one route.
+   - **Possible difference:** OpenRouter's defaults for this model (for example, thinking) may differ from the
+     native API's. All analysed Gemini data uses the same route, so conditions stay comparable.
+   - **Unchanged:** tasks, conditions, generation settings that are sent (`max_tokens` 1000) and the analysis.

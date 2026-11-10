@@ -27,10 +27,21 @@
       "pause_s": 2.0
     },
     {
-      "provider": "gemini",
-      "model": "gemini-3.5-flash-lite",
+      "provider": "openrouter",
+      "model": "google/gemini-3.5-flash-lite",
       "max_tokens": 1000,
-      "pause_s": 4.5
+      "pause_s": 0.2,
+      "budget_usd": 1.5,
+      "max_cost_per_call_usd": 0.0015,
+      "extra_body": {
+        "provider": {
+          "order": [
+            "google-ai-studio/flex"
+          ],
+          "allow_fallbacks": false
+        }
+      },
+      "note": "amendment 3: moved from the Gemini free tier (daily request quota) to OpenRouter, pinned to Google AI Studio flex; paid, hard $1.50 cap"
     }
   ],
   "calibration": {
