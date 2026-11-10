@@ -25,7 +25,7 @@ def test_generate_round_trip_and_trace(tmp_path: Path) -> None:
     r = h.generate("hello")
     assert str(r) == "[mock] hello"
     assert r.trace.strategy_id == "identity" and r.trace.optimized is False
-    assert "not implemented" in r.trace.reason
+    assert r.trace.reason.startswith("identity:")  # a fresh model has no evidence, so the prompt is unchanged
     assert r.result.simulated is True
 
 
