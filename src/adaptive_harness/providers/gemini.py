@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Iterator, Mapping
 from typing import Any
@@ -11,7 +12,7 @@ import httpx
 from .._keys import Secret, get_secret
 from ..config import HTTPConfig
 from ..errors import ConfigurationError, MalformedResponseError, ProviderError
-from ..types import CompletionRequest, CompletionResult, FinishReason, StreamEvent, Usage
+from ..types import CompletionRequest, CompletionResult, FinishReason, StreamEvent, ToolCall, Usage
 from ._http import HTTPTransport, map_error
 from .base import MetadataFact, ModelInfo, ProviderAdapter, ProviderCapabilities
 
@@ -60,6 +61,20 @@ def _text(d: Mapping[str, Any]) -> tuple[str, FinishReason]:
         else (FinishReason.UNKNOWN)
     )
     return text, reason
+
+
+def _tool_calls(d: Mapping[str, Any]) -> tuple[ToolCall, ...]:
+    cands = d.get("candidates") or []
+    parts = ((cands[0].get("content") or {}).get("parts") or []) if cands else []
+    return tuple(
+        ToolCall(
+            str(p["functionCall"]["name"]),
+            json.dumps(p["functionCall"].get("args") or {}),
+            p["functionCall"].get("id"),
+        )
+        for p in parts
+        if isinstance(p, dict) and isinstance(p.get("functionCall"), dict) and p["functionCall"].get("name")
+    )
 
 
 class GeminiAdapter(ProviderAdapter):
@@ -135,6 +150,7 @@ class GeminiAdapter(ProviderAdapter):
             request_id=d.get("responseId"),
             fingerprint={"model_version": str(d["modelVersion"])} if d.get("modelVersion") else {},
             retries=resp.attempts - 1,
+            tool_calls=_tool_calls(d),
             raw=d,
         )
 

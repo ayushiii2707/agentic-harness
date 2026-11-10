@@ -7,6 +7,7 @@ can record the difference instead of hiding it.
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Iterator, Mapping
 from typing import Any
@@ -16,7 +17,7 @@ import httpx
 from .._keys import Secret, get_secret
 from ..config import HTTPConfig
 from ..errors import ConfigurationError, MalformedResponseError, ProviderError
-from ..types import CompletionRequest, CompletionResult, FinishReason, Message, StreamEvent, Usage
+from ..types import CompletionRequest, CompletionResult, FinishReason, Message, StreamEvent, ToolCall, Usage
 from ._http import HTTPTransport, map_error
 from .base import MetadataFact, ModelInfo, ProviderAdapter, ProviderCapabilities
 
@@ -131,6 +132,11 @@ class AnthropicAdapter(ProviderAdapter):
             fingerprint={"model_reported": str(d["model"])} if d.get("model") else {},
             dropped_settings=dropped,
             retries=resp.attempts - 1,
+            tool_calls=tuple(
+                ToolCall(str(b["name"]), json.dumps(b.get("input") or {}), b.get("id"))
+                for b in content
+                if isinstance(b, dict) and b.get("type") == "tool_use" and b.get("name")
+            ),
             raw=d,
         )
 

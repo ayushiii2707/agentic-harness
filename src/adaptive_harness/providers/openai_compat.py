@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Iterator, Mapping
 from typing import Any
@@ -11,7 +12,7 @@ import httpx
 from .._keys import Secret, get_secret
 from ..config import HTTPConfig
 from ..errors import ConfigurationError, MalformedResponseError, ProviderError
-from ..types import CompletionRequest, CompletionResult, FinishReason, StreamEvent, Usage
+from ..types import CompletionRequest, CompletionResult, FinishReason, StreamEvent, ToolCall, Usage
 from ._http import HTTPTransport, map_error
 from .base import MetadataFact, ModelInfo, ProviderAdapter, ProviderCapabilities
 from .presets import PRESETS, OpenAIPreset, custom_preset
@@ -43,6 +44,20 @@ def _usage(u: Mapping[str, Any] | None) -> Usage:
         reasoning_tokens=details.get("reasoning_tokens"),
         cached_input_tokens=prompt_details.get("cached_tokens"),
     )
+
+
+def _tool_calls(message: Mapping[str, Any]) -> tuple[ToolCall, ...]:
+    out = []
+    for c in message.get("tool_calls") or ():
+        fn = c.get("function") if isinstance(c, dict) else None
+        if isinstance(fn, dict) and fn.get("name"):
+            args = fn.get("arguments")
+            out.append(
+                ToolCall(
+                    str(fn["name"]), args if isinstance(args, str) else json.dumps(args or {}), c.get("id")
+                )
+            )
+    return tuple(out)
 
 
 class OpenAICompatibleAdapter(ProviderAdapter):
@@ -152,6 +167,7 @@ class OpenAICompatibleAdapter(ProviderAdapter):
             fingerprint=self._fingerprint(d, resp.headers),
             dropped_settings=dropped,
             retries=resp.attempts - 1,
+            tool_calls=_tool_calls(message),
             raw=d,
         )
 

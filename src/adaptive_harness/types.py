@@ -91,6 +91,15 @@ class CompletionRequest:
 
 
 @dataclass(frozen=True)
+class ToolCall:
+    """A tool call requested by the model, normalised across providers. ``arguments`` is the provider's JSON."""
+
+    name: str
+    arguments: str
+    id: str | None = None
+
+
+@dataclass(frozen=True)
 class CompletionResult:
     text: str
     finish_reason: FinishReason
@@ -105,6 +114,7 @@ class CompletionResult:
     dropped_settings: tuple[str, ...] = ()  # settings the adapter could not send (recorded, never silent)
     retries: int = 0
     simulated: bool = False
+    tool_calls: tuple[ToolCall, ...] = ()
     raw: Mapping[str, Any] | None = field(default=None, repr=False)
 
 
