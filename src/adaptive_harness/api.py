@@ -25,6 +25,7 @@ from .providers.base import ModelInfo, ProviderAdapter
 from .providers.registry import create_adapter
 from .redaction import redact_text
 from .store import Store
+from .tasks import TaskAnalyzer
 from .types import CompletionRequest, CompletionResult, GenerationSettings, Message, StreamEvent
 
 log = get_logger(__name__)
@@ -95,6 +96,7 @@ class AdaptiveHarness:
                 getattr(transport, "base_url", None), self.adapter.capabilities().local
             ),
         )
+        self.analyzer = TaskAnalyzer()
         self.store: Store | None = None
         self.ledger: BudgetLedger | None = None
         self.models: ModelRegistry | None = None
@@ -215,7 +217,24 @@ class AdaptiveHarness:
             if not self.config.optimize
             else "strategy selection not implemented yet: identity pass-through"
         )
-        trace = Trace(strategy_id=IDENTITY[0], strategy_version=IDENTITY[1], reason=reason, optimized=False)
+        category: str | None = None
+        confidence: float | None = None
+        notes: tuple[str, ...] = ()
+        try:  # labelling only; the request above is already built and is not changed
+            spec = self.analyzer.analyze("\n\n".join(m.content for m in request.messages if m.role == "user"))
+            category, confidence = spec.category, round(spec.confidence, 4)
+        except Exception as e:  # task understanding must never block the call
+            log.warning("task analysis failed: %s", e)
+            notes = ("task analysis failed",)
+        trace = Trace(
+            strategy_id=IDENTITY[0],
+            strategy_version=IDENTITY[1],
+            reason=reason,
+            optimized=False,
+            category=category,
+            confidence=confidence,
+            notes=notes,
+        )
         return request, trace
 
     def _record(
@@ -249,14 +268,15 @@ class AdaptiveHarness:
                         obs.resolved_version,
                     )
             self.store.execute(
-                """INSERT INTO trial(id, model_ref, provider, model_requested, model_reported, strategy_id, strategy_version,
+                """INSERT INTO trial(id, model_ref, category_id, provider, model_requested, model_reported, strategy_id, strategy_version,
                      settings_json, prompt_hash, original_prompt, transformed_prompt, response_text, finish_reason,
                      input_tokens, output_tokens, reasoning_tokens, cost_usd, cost_is_estimated, latency_s, retries,
                      fingerprint_json, dropped_settings, error, status, simulated, trace_json, created_at, finished_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     trial_id,
                     model_ref,
+                    trace.category,
                     self.adapter.name,
                     request.model,
                     result.model_reported if result else None,

@@ -1,0 +1,411 @@
+{
+  "version": "1",
+  "thresholds": {
+    "min_probability": 0.3,
+    "min_margin": 0.0,
+    "unexplained_mass": 0.5
+  },
+  "categories": {
+    "code_generation": {
+      "parent": null,
+      "description": "Write new code: functions, classes, scripts, queries, small programs.",
+      "phrases": {
+        "write a function": 2,
+        "function that": 1.5,
+        "implement": 2,
+        "write a script": 2,
+        "bash script": 2,
+        "class for": 1.5,
+        "program that": 2,
+        "decorator": 1,
+        "sql query": 1,
+        "python": 0.5,
+        "java": 0.5,
+        "javascript": 0.5,
+        "typescript": 0.5,
+        "go": 0.3,
+        "rust": 0.5,
+        "c++": 0.5,
+        "kotlin": 0.5,
+        "bash": 0.5
+      },
+      "patterns": {
+        "\\b(write|create|implement|generate|code|build|make)\\b[^.?!\\n]{0,40}\\b(function|class|script|program|method|module|game|cache|generator|decorator|query)\\b": 2
+      }
+    },
+    "code_debugging": {
+      "parent": null,
+      "description": "Find and fix a bug or error in existing code or tooling.",
+      "phrases": {
+        "error": 1.5,
+        "exception": 1.5,
+        "traceback": 2,
+        "crash": 2,
+        "crashes": 2,
+        "fails": 1.5,
+        "bug": 2,
+        "fix": 1,
+        "doesn't work": 2,
+        "not working": 2,
+        "never ends": 2,
+        "debug": 2,
+        "segmentation fault": 3,
+        "throws": 2,
+        "rejected": 1.5,
+        "exits": 1.5,
+        "how do i fix": 2,
+        "what's wrong": 2,
+        "find the bug": 3,
+        "duplicate rows": 1,
+        "mistake": 1.5,
+        "always returns": 1.5
+      },
+      "patterns": {
+        "\\b[A-Z][A-Za-z]+Error\\b": 2.5,
+        "Traceback \\(most recent call last\\)": 3,
+        "\\bwhy does (my|this)\\b": 1.5
+      }
+    },
+    "code_explanation": {
+      "parent": null,
+      "description": "Explain what given code, commands or configuration do.",
+      "phrases": {
+        "explain": 2,
+        "what does": 1.5,
+        "walk me through": 2.5,
+        "line by line": 2,
+        "how does this": 2,
+        "describe what": 1.5,
+        "i don't understand": 2,
+        "one instruction at a time": 2,
+        "time complexity": 1.5,
+        "this snippet": 1,
+        "this code": 0.5
+      },
+      "patterns": {
+        "```": 0.5
+      }
+    },
+    "code_refactoring": {
+      "parent": null,
+      "description": "Restructure existing code without changing its behaviour.",
+      "phrases": {
+        "refactor": 3,
+        "clean up": 2,
+        "rewrite": 1,
+        "simplify": 1.5,
+        "more readable": 2,
+        "rename": 1.5,
+        "list comprehension": 1.5,
+        "single responsibility": 2.5,
+        "pure": 1,
+        "type hints": 1,
+        "magic numbers": 2.5,
+        "without changing": 2,
+        "keep the behaviour": 2,
+        "same behavior": 2,
+        "keep all existing": 1.5,
+        "tidy": 1.5,
+        "cyclomatic complexity": 2.5,
+        "split the long function": 2,
+        "replace the callbacks": 1.5,
+        "into a repository class": 2,
+        "convert this for-loop": 2
+      },
+      "patterns": {}
+    },
+    "architecture": {
+      "parent": null,
+      "description": "Design or compare system architectures, service boundaries and infrastructure.",
+      "phrases": {
+        "architecture": 3,
+        "system design": 3,
+        "design a": 1,
+        "design the": 1,
+        "scalable": 2,
+        "scales": 1.5,
+        "microservices": 2.5,
+        "monolith": 2.5,
+        "highly available": 2,
+        "high availability": 2,
+        "service boundaries": 2.5,
+        "trade-offs": 1,
+        "caching strategy": 2,
+        "fault-tolerant": 2.5,
+        "data model": 1,
+        "backend": 1,
+        "kafka": 1.5,
+        "sqs": 1.5,
+        "cdn": 1.5,
+        "event-driven": 2,
+        "distributed": 1.5,
+        "horizontally": 2,
+        "multi-tenant": 2,
+        "offline": 1,
+        "sync": 0.5,
+        "high-level design": 2.5,
+        "latency": 1,
+        "databases": 1,
+        "storage": 0.5
+      },
+      "patterns": {
+        "\\b\\d+(\\.\\d+)?\\s*(million|k|m)\\b[^.]{0,20}\\busers\\b": 2
+      }
+    },
+    "api_development": {
+      "parent": "code_generation",
+      "description": "Build or design HTTP/RPC APIs: endpoints, routes, controllers, schemas.",
+      "phrases": {
+        "rest api": 3,
+        "api": 1.5,
+        "endpoint": 2.5,
+        "endpoints": 2.5,
+        "route": 1.5,
+        "routes": 1.5,
+        "flask": 1,
+        "fastapi": 1.5,
+        "express": 1.5,
+        "express.js": 1.5,
+        "django rest framework": 2.5,
+        "viewset": 2,
+        "graphql": 2.5,
+        "openapi": 2.5,
+        "spring boot": 2,
+        "controller": 1.5,
+        "status codes": 1.5,
+        "paginated": 1.5,
+        "request body": 1.5,
+        "resolvers": 2,
+        "json": 0.5,
+        "http server": 2
+      },
+      "patterns": {
+        "\\b(GET|POST|PUT|PATCH|DELETE)\\s+/": 3,
+        "\\s/v\\d\\b": 1
+      }
+    },
+    "data_analysis": {
+      "parent": null,
+      "description": "Analyse, clean, model or visualise data.",
+      "phrases": {
+        "dataset": 2,
+        "dataframe": 2.5,
+        "pandas": 2,
+        "csv": 1,
+        "analyze": 1.5,
+        "analyse": 1.5,
+        "plot": 1.5,
+        "visualize": 1.5,
+        "distribution": 1.5,
+        "regression": 2.5,
+        "statistically significant": 2.5,
+        "outliers": 2.5,
+        "mean": 1,
+        "trend": 1.5,
+        "seasonality": 2.5,
+        "rolling average": 2.5,
+        "heatmap": 2,
+        "seaborn": 2,
+        "matplotlib": 2,
+        "survey data": 2,
+        "missing values": 1.5,
+        "correlation": 2,
+        "correlate": 2,
+        "conversion rates": 2,
+        "iqr": 2,
+        "lifetime value": 2,
+        "group the": 1,
+        "key statistics": 2
+      },
+      "patterns": {}
+    },
+    "summarisation": {
+      "parent": null,
+      "description": "Shorten or summarise provided text.",
+      "phrases": {
+        "tl;dr": 3,
+        "key points": 2,
+        "condense": 2.5,
+        "recap": 2.5,
+        "shorten": 2,
+        "executive summary": 3,
+        "boil": 1.5,
+        "brief summary": 2,
+        "in plain english": 1.5,
+        "main decisions": 1.5,
+        "short overview": 2
+      },
+      "patterns": {
+        "\\bsummar(y|ies|i[sz]e|i[sz]ed|i[sz]ing)\\b": 3
+      }
+    },
+    "research": {
+      "parent": null,
+      "description": "Gather, compare and synthesise evidence or literature.",
+      "phrases": {
+        "research": 1.5,
+        "literature": 3,
+        "studies": 2,
+        "cite": 2,
+        "sources": 2,
+        "evidence": 2,
+        "state of the art": 2.5,
+        "published": 1.5,
+        "papers": 2,
+        "survey the": 2,
+        "pros and cons": 1.5,
+        "compare": 1,
+        "benchmarks": 1.5,
+        "market size": 2.5,
+        "competitors": 1.5,
+        "investigate": 1.5,
+        "literature review": 2,
+        "for and against": 2,
+        "where studies disagree": 2,
+        "documentation": 0.5
+      },
+      "patterns": {
+        "\\bwhat (does|do) (the )?(current )?(research|evidence)\\b": 2.5
+      }
+    },
+    "question_answering": {
+      "parent": null,
+      "description": "A self-contained factual or conceptual question.",
+      "phrases": {
+        "capital of": 2,
+        "who wrote": 2,
+        "difference between": 1
+      },
+      "patterns": {
+        "^\\s*(what|who|when|where|which|why|how many|how long|how does|is|are|does|did)\\b[^\\n]{0,90}\\?\\s*$": 2.5
+      }
+    },
+    "math": {
+      "parent": null,
+      "description": "Mathematical problems: algebra, calculus, probability, arithmetic, proofs.",
+      "phrases": {
+        "solve": 2,
+        "derivative": 3,
+        "integral": 3,
+        "eigenvalues": 3,
+        "matrix": 1.5,
+        "probability": 2.5,
+        "prove": 2.5,
+        "simplify (": 2,
+        "equation": 2,
+        "average speed": 2,
+        "how many ways": 2.5,
+        "calculate": 1,
+        "compute": 1,
+        "irrational": 2.5,
+        "dice": 2,
+        "% of": 2,
+        "system:": 1.5
+      },
+      "patterns": {
+        "\\d\\s*[+\\-*/^=]\\s*\\d": 1.5,
+        "\\bx\\s*[+\\-=^]|\\bx\\^\\d|\\d\\s*x\\b": 2
+      }
+    },
+    "structured_output": {
+      "parent": null,
+      "description": "Produce output in a specified structured format (JSON, CSV, YAML, XML, tables).",
+      "phrases": {
+        "json": 2.5,
+        "csv": 1.5,
+        "yaml": 2.5,
+        "xml": 2.5,
+        "markdown table": 2.5,
+        "table": 1,
+        "schema": 1.5,
+        "extract": 1.5,
+        "fields": 1.5,
+        "parse": 1,
+        "iso 8601": 2,
+        "json array": 2,
+        "json object": 2,
+        "template": 0.5,
+        "return them as": 1.5,
+        "output one": 1
+      },
+      "patterns": {
+        "\\{\\s*\\\"": 1.5
+      }
+    },
+    "content_generation": {
+      "parent": null,
+      "description": "Write prose or creative content: posts, emails, stories, poems, copy.",
+      "phrases": {
+        "blog post": 3,
+        "poem": 3,
+        "haiku": 3,
+        "story": 2.5,
+        "email": 1.5,
+        "draft": 1.5,
+        "cover letter": 3,
+        "taglines": 3,
+        "tagline": 3,
+        "linkedin post": 3,
+        "tweets": 3,
+        "tweet": 3,
+        "toast": 3,
+        "youtube": 2,
+        "product description": 2,
+        "slogan": 2.5,
+        "compose": 1.5,
+        "write a short": 1,
+        "catchy": 2
+      },
+      "patterns": {}
+    },
+    "security_sensitive_code": {
+      "parent": "code_generation",
+      "description": "Code where security is a primary requirement: auth, crypto, input handling, injection.",
+      "phrases": {
+        "secure": 2.5,
+        "securely": 2.5,
+        "safely": 2,
+        "security": 2,
+        "injection": 3,
+        "xss": 3,
+        "csrf": 3,
+        "password": 2,
+        "passwords": 2,
+        "hashing": 1.5,
+        "authentication": 2.5,
+        "jwt": 2.5,
+        "oauth": 2.5,
+        "oauth2": 2.5,
+        "token": 1,
+        "sanitize": 2.5,
+        "sanitise": 2.5,
+        "path traversal": 3,
+        "signature": 1.5,
+        "encrypt": 2.5,
+        "encryption": 2.5,
+        "login": 1.5,
+        "session management": 1.5
+      },
+      "patterns": {
+        "\\bvulnerab(le|ility|ilities)\\b": 3
+      }
+    },
+    "multi_step": {
+      "parent": null,
+      "description": "Several dependent sub-tasks that must be carried out in order.",
+      "phrases": {
+        "step 1": 3,
+        "step 2": 1,
+        "first": 0.5,
+        "finally": 1.5,
+        "go through these steps": 2.5,
+        "break this project into tasks": 2.5,
+        "plan a": 1
+      },
+      "patterns": {
+        "\\bthen\\b[^.]*\\bthen\\b": 3,
+        "\\bfirst\\b[^.]*\\bthen\\b": 2
+      }
+    }
+  }
+}
