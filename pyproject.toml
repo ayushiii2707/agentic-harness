@@ -51,7 +51,7 @@ exclude = ["/.env", "/.harness", "/data/external"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]  # import from the source tree even if an editable install is not active
+pythonpath = ["src", "."]  # the source tree (even without an editable install) and experiments/
 addopts = "-ra --strict-markers"
 markers = [
   "live: makes real network calls to a model provider (never run by default)",
