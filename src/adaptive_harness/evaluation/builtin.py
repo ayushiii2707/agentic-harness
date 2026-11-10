@@ -72,6 +72,47 @@ class JsonOutput:
         return EvaluationResult(EvalStatus.SUCCESS, self.evaluator_id, self.version)
 
 
+@dataclass(frozen=True)
+class JsonFields:
+    """Success when the answer's JSON object has exactly the expected values for the given keys.
+
+    Strings compare case-insensitively after trimming; numbers compare numerically. Extra keys are allowed.
+    """
+
+    expected: tuple[tuple[str, str | float], ...]
+    evaluator_id: str = "json_fields"
+    version: str = "1"
+
+    def evaluate(self, text: str) -> EvaluationResult:
+        parsed = JsonOutput().evaluate(text)
+        if parsed.status is not EvalStatus.SUCCESS:
+            return EvaluationResult(
+                EvalStatus.FAILURE, self.evaluator_id, self.version, details=parsed.details
+            )
+        candidate = extract_code(text, "json")
+        value = json.loads(candidate if candidate is not None else (text or "").strip())
+        if not isinstance(value, dict):
+            return EvaluationResult(
+                EvalStatus.FAILURE, self.evaluator_id, self.version, details="not an object"
+            )
+        wrong = []
+        for key, want in self.expected:
+            got = value.get(key)
+            if isinstance(want, (int, float)) and not isinstance(want, bool):
+                try:
+                    ok = got is not None and math.isclose(float(got), float(want))
+                except (TypeError, ValueError):
+                    ok = False
+            else:
+                ok = isinstance(got, str) and got.strip().lower() == str(want).strip().lower()
+            if not ok:
+                wrong.append(key)
+        status = EvalStatus.SUCCESS if not wrong else EvalStatus.FAILURE
+        return EvaluationResult(
+            status, self.evaluator_id, self.version, details=f"wrong: {wrong}" if wrong else ""
+        )
+
+
 _NUMBER = re.compile(r"-?\d+(?:\.\d+)?(?:e-?\d+)?", re.I)
 
 
