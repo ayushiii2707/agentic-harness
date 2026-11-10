@@ -60,3 +60,15 @@ approval; "Decided" entries were made by the owner or follow from their instruct
   value is stored as a `provider_reported` fact. *Reason:* otherwise profiles would go stale constantly.
 - **D19.** A profile marked `stale` is kept and keeps its evidence. A new profile version is created only by
   recalibration (Phase 7), so stale evidence is never silently discarded or silently reused as fresh.
+
+## 2026-11-10 (Phase 5)
+
+- **D20.** Classifier thresholds are those that maximised dev accuracy (`min_probability 0.30`, `min_margin 0.00`,
+  `unexplained_mass 0.5`). They replace the DESIGN placeholders (0.55 / 0.15), as DESIGN §5.2 requires
+  ("tuned on a labelled development set ... and frozen before Phase 12"). They are frozen in
+  `tasks/taxonomy.json` version 1.
+- **D21.** Lexicon leakage rule: no lexicon entry may match a test prompt unless it also matches a dev prompt
+  (`scripts/eval_classifier.py --check-leakage`). Lexicons are never edited in response to test errors; a
+  changed lexicon needs a new taxonomy version and a fresh test set.
+- **D22.** The task-classification set is author-written (no suitable public set matches the taxonomy). This
+  limitation is stated in every report that uses it.

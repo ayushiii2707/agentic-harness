@@ -7,7 +7,9 @@
 - **Phase 2, foundation:** done; pushed to `feat/foundation-and-providers`.
 - **Phase 3, provider adapters:** done. Live-verified on Groq, Gemini and OpenRouter; OpenAI and Anthropic
   reached but their accounts have no credit; local Ollama pending the model download.
-- **Phase 4, model intelligence:** implemented, tested, live-checked on Groq. **Awaiting review.**
+- **Phase 4, model intelligence:** done; pushed.
+- **Phase 5, task understanding:** implemented and evaluated. Held-out test accuracy is 0.688 (see
+  `docs/reports/phase5_classifier.md`). **Awaiting review.**
 - Strategy selection, calibration and learning are **not** implemented. The harness passes prompts through
   unchanged and its trace says so.
 
@@ -116,6 +118,42 @@ hosted`, a `cold` profile, and facts with provenance: context window 131,072 (ve
 
 **Not done in Phase 4, by design:** creating new profile versions on recalibration (Phase 7), and staleness by age
 or outcome drift (Phase 10).
+
+## 2026-11-10: Phase 5 (task understanding)
+**Built:**
+- `tasks/taxonomy.json` (version 1): 15 categories plus `general`. `api_development` and
+  `security_sensitive_code` are children of `code_generation`. Holds weighted phrases and patterns per category
+  and the frozen thresholds.
+- `tasks/classifier.py`: a deterministic weighted-lexicon classifier. Its distribution includes an explicit
+  "unexplained" mass assigned to `general`, and it falls back to `general` below the confidence or margin
+  thresholds. A parent or child runner-up does not count against the margin.
+- `tasks/requirements.py`: extracts constraint sentences, negative instructions, numbers with units, quoted
+  literals, identifiers, paths, URLs, languages and output formats.
+- `tasks/understanding.py`: `TaskAnalyzer.analyze()` returns a `TaskSpec` with the classification, requirements,
+  a low/medium/high complexity estimate, and the evaluator kinds that could score the task (named only; the
+  evaluators themselves arrive in Phase 9).
+- `api.py`: every call is labelled (category and confidence in the trace and in `trial.category_id`). The
+  request is never changed, and a labelling failure never blocks the call.
+
+**Evaluation** (`scripts/eval_classifier.py`, data in `data/task_classification/`):
+- 320 author-written prompts, 20 per category, split before tuning: 192 dev / 128 test.
+- **Leakage control:** the first lexicon draft contained 60 entries that matched test prompts but no dev prompt.
+  All 60 were removed mechanically (`--check-leakage` now passes) **before** tuning or testing.
+- Thresholds tuned on dev only (grid search): `min_probability 0.30`, `min_margin 0.00`,
+  `unexplained_mass 0.5`. Dev accuracy 0.927.
+- **Held-out test:**
+  - accuracy **0.688**; parent-accepted accuracy 0.703;
+  - coverage 0.812; accuracy when not `general` 0.779;
+  - of 40 errors, 17 fell back to `general` (conservative) and 23 chose another specific category.
+- The dev/test gap shows that the hand-written lexicons overfit. The lexicons were **not** adjusted after seeing
+  the test errors.
+
+**What this means for later phases:**
+- Category labels are wrong about 30% of the time on this set, and likely more often on real prompts (same
+  author for prompts, labels and lexicons).
+- So the policy (Phase 10) keeps identity as the default and backs off to parent and model-level evidence, as
+  designed.
+- Experiments must report results by *predicted* category and examine misclassification.
 
 ## Known issues / open questions
 - OpenAI and Anthropic chat calls cannot be completed until those accounts have credit. Their adapters are
