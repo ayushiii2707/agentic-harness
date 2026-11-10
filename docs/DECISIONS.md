@@ -52,3 +52,11 @@ approval; "Decided" entries were made by the owner or follow from their instruct
 - **D17 (Decided, owner).** The key-handling module is `adaptive_harness/_keys.py`. A development safety hook
   rejects any shell command containing certain words; the owner chose to rename the module rather than disable
   or bypass the hook. Class and function names inside it (`Secret`, `get_secret`) are unchanged.
+
+## 2026-11-10 (Phase 4)
+
+- **D18.** The identity fingerprint covers the reported model, the reported version and the serving host. It
+  excludes `system_fingerprint`, which OpenAI-style backends change with routine configuration updates; that
+  value is stored as a `provider_reported` fact. *Reason:* otherwise profiles would go stale constantly.
+- **D19.** A profile marked `stale` is kept and keeps its evidence. A new profile version is created only by
+  recalibration (Phase 7), so stale evidence is never silently discarded or silently reused as fresh.

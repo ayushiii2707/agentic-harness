@@ -4,9 +4,10 @@
 - **Phase 0, repository audit of LeBlanc v4:** complete; approved 2026-11-10.
 - **Phase 1, research and architectural design:** complete; approved 2026-11-10 (licence Apache-2.0, $10 hard
   cap, free providers first).
-- **Phase 2, foundation:** implemented and tested. **Awaiting review.**
-- **Phase 3, provider adapters:** implemented and contract-tested. Live-verified on Groq and Gemini (free tiers);
-  local Ollama pending the model download. **Awaiting review.**
+- **Phase 2, foundation:** done; pushed to `feat/foundation-and-providers`.
+- **Phase 3, provider adapters:** done. Live-verified on Groq, Gemini and OpenRouter; OpenAI and Anthropic
+  reached but their accounts have no credit; local Ollama pending the model download.
+- **Phase 4, model intelligence:** implemented, tested, live-checked on Groq. **Awaiting review.**
 - Strategy selection, calibration and learning are **not** implemented. The harness passes prompts through
   unchanged and its trace says so.
 
@@ -86,6 +87,35 @@ is clean on 22 source files. Contract fixtures are synthetic bodies in each prov
 - Reasoning models spend output tokens on hidden reasoning, so a 16-token cap returned empty answers. The smoke
   test uses 512. This matters for experiment design: `max_tokens` caps must be set per model family and
   recorded.
+
+## 2026-11-10: Phase 4 (model intelligence)
+**Built:**
+- `models/identity.py`:
+  - `ModelKey(provider, model_id, deployment)`; `local:<host>` for local servers.
+  - Alias detection (`latest`).
+  - `resolved_version()`: the version the provider reports in its responses.
+  - `fingerprint_of()`: a hash of the reported model, version and serving host. `system_fingerprint` is
+    excluded (D18).
+- `models/registry.py`, `ModelRegistry`:
+  - `observe()`: upserts the model row and makes sure a profile exists. A new resolved version creates a new
+    model row with a `cold` profile and marks the previous version's profiles `stale`, with a `fingerprint`
+    change event. A changed serving host on the same version also marks the profile stale.
+  - `record_facts()` / `facts()`: metadata with provenance (`verified`, `provider_reported`, `inferred`,
+    `observed`). An unchanged value is not stored twice.
+  - `profile()`: the latest profile, with its facts and change events.
+- `api.py`:
+  - every successful call is observed and its trial linked to the model row (`trial.model_ref`);
+  - `harness.profile()` reports the profile and makes no network call;
+  - `harness.model_info()` makes one explicit metadata request and records the facts.
+
+**Tests:** 86 unique offline tests pass (6 new); ruff and mypy --strict are clean.
+
+**Live check (Groq, free):** one call through `AdaptiveHarness`. Result: model key `groq / openai/gpt-oss-20b /
+hosted`, a `cold` profile, and facts with provenance: context window 131,072 (verified), `owned_by` and
+`system_fingerprint` (provider_reported), deployment (inferred).
+
+**Not done in Phase 4, by design:** creating new profile versions on recalibration (Phase 7), and staleness by age
+or outcome drift (Phase 10).
 
 ## Known issues / open questions
 - OpenAI and Anthropic chat calls cannot be completed until those accounts have credit. Their adapters are
