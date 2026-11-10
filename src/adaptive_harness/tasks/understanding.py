@@ -27,6 +27,7 @@ class TaskSpec:
     requirements: RequirementSet
     complexity: Complexity
     suitable_evaluators: tuple[str, ...]
+    text: str = ""  # the analysed prompt text, so strategies can decide whether they apply
 
     @property
     def category(self) -> str:
@@ -74,4 +75,5 @@ class TaskAnalyzer:
             requirements=req,
             complexity=estimate_complexity(prompt, req),
             suitable_evaluators=suitable_evaluators(prompt, classification.category, req),
+            text=prompt,
         )

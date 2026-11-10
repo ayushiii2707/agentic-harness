@@ -26,7 +26,9 @@ def test_builtin_ids_versions_and_hashes_are_unique() -> None:
     keys = [(s.info.id, s.info.version) for s in BUILTIN]
     assert len(keys) == len(set(keys))
     assert len({s.content_hash for s in BUILTIN}) == len(BUILTIN)
-    assert {s.info.kind for s in BUILTIN} <= {"identity", "additive", "structural"}  # no rewriting in v1
+    assert {s.info.kind for s in BUILTIN} <= {"identity", "additive", "structural", "rewriting"}
+    # rewriting strategies are gated by the preservation check (tests/unit/test_transform.py)
+    assert [s.info.id for s in BUILTIN if s.info.kind == "rewriting"] == ["minimal_context"]
 
 
 def test_identity_is_unchanged() -> None:
@@ -35,7 +37,9 @@ def test_identity_is_unchanged() -> None:
     assert list(r.messages) == msgs and r.added_text == ()
 
 
-@pytest.mark.parametrize("strategy", BUILTIN, ids=lambda s: s.info.id)
+@pytest.mark.parametrize(
+    "strategy", [s for s in BUILTIN if s.info.kind != "rewriting"], ids=lambda s: s.info.id
+)
 def test_user_text_and_user_system_are_kept_verbatim_on_every_dataset_prompt(strategy: Strategy) -> None:
     user_system = Message("system", "Use British spelling.")
     applied = 0

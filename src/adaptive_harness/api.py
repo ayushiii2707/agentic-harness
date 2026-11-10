@@ -35,6 +35,7 @@ from .redaction import redact_text
 from .store import Store
 from .strategies import Strategy, StrategyRegistry
 from .tasks import TaskAnalyzer, TaskSpec
+from .transform import apply_strategy
 from .types import CompletionRequest, CompletionResult, GenerationSettings, Message, StreamEvent
 
 log = get_logger(__name__)
@@ -83,19 +84,6 @@ class _Plan:
     trace: Trace
     experiment_id: str | None = None
     task_ref: str | None = None
-
-
-def _preserves(original: Sequence[Message], new: Sequence[Message]) -> bool:
-    """Every original message must still be present, in order, and the last user text verbatim."""
-    users = [m.content for m in new if m.role == "user"]
-    last_user = next((m.content for m in reversed(original) if m.role == "user"), None)
-    if last_user is None or not users or last_user not in users[-1]:
-        return False
-    it = iter(new)
-    for m in original[:-1] if original and original[-1].role == "user" else original:
-        if not any(n == m for n in it):
-            return False
-    return True
 
 
 class AdaptiveHarness:
@@ -379,18 +367,19 @@ class AdaptiveHarness:
         notes: tuple[str, ...] = ()
         sent = original
         if strategy.info.id != "identity":
-            try:
-                out = strategy.transform(original.messages, spec)
-                if not _preserves(original.messages, out.messages):
-                    raise ValueError("transformation did not keep the original messages verbatim")
-                sent = replace(original, messages=out.messages)
-            except Exception as e:
-                log.warning("strategy %s failed, sending the original prompt: %s", strategy.info.id, e)
+            applied = apply_strategy(strategy, original.messages, spec)
+            if not applied.ok:
+                log.warning(
+                    "strategy %s not applied, sending the original prompt: %s",
+                    strategy.info.id,
+                    applied.reason,
+                )
                 return passthrough(
                     f"identity: {strategy.info.id} could not be applied",
                     spec,
-                    (f"{strategy.info.id} failed",),
+                    (f"{strategy.info.id} rejected: {applied.reason}"[:300],),
                 )
+            sent = replace(original, messages=applied.messages)
         trace = Trace(
             strategy.info.id,
             strategy.info.version,

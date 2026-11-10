@@ -1,11 +1,13 @@
-"""Version 1 built-in strategies (DESIGN §5.3).
+"""Built-in strategies (DESIGN §5.3).
 
-These are hypotheses to be tested per model and per category, not recommendations. None of them paraphrases the
-user's text: it always appears verbatim in the transformed messages.
+These are hypotheses to be tested per model and per category, not recommendations. All but one keep the
+user's text verbatim. ``minimal_context`` is a *rewriting* strategy: it deletes pleasantries, and the
+transformation engine only sends its output when the preservation check accepts it (transform/preservation.py).
 """
 
 from __future__ import annotations
 
+import re
 from collections.abc import Sequence
 from typing import ClassVar
 
@@ -246,6 +248,52 @@ class RequirementsChecklist(Strategy):
         return self._result(replace_last_user(messages, original + "\n\n" + block), block)
 
 
+_FILLER: tuple[re.Pattern[str], ...] = (
+    re.compile(
+        r"^\s*(?:hi|hello|hey|good (?:morning|afternoon|evening))(?: there| all| everyone)?\s*[,!.]+\s*", re.I
+    ),
+    re.compile(r"\s*(?:many )?(?:thanks|thank you)(?: (?:so|very) much)?(?: in advance)?\s*[.!]*\s*$", re.I),
+    re.compile(r"\bI was wondering if you could\s+", re.I),
+    re.compile(r"\bI would (?:really )?like you to\s+", re.I),
+    re.compile(
+        r"\b(?:could|can|would) you (?:please )?(?=(?:write|explain|create|make|give|tell|help|show|list|"
+        r"summari[sz]e|implement|fix|build|generate|convert|translate)\b)",
+        re.I,
+    ),
+    re.compile(r"\b(?:please|kindly)\s+(?=[a-z])", re.I),
+)
+
+
+def strip_filler(text: str) -> str:
+    out = text
+    for pat in _FILLER:
+        out = pat.sub("", out)
+    out = re.sub(r"[ \t]{2,}", " ", out).strip()
+    return out[:1].upper() + out[1:] if out else out
+
+
+class MinimalContext(Strategy):
+    info = StrategyInfo(
+        id="minimal_context",
+        version="1",
+        kind="rewriting",
+        description="Removes greetings, thanks and politeness phrases; every requirement must survive the gate.",
+        intended_use="Chatty prompts, where pleasantries add tokens but no requirements.",
+        limitations="Deterministic and narrow on purpose: it only deletes a fixed list of phrases.",
+    )
+    templates: ClassVar[dict[str, str]] = {"patterns": " | ".join(p.pattern for p in _FILLER)}
+
+    def applicable(self, spec: TaskSpec) -> bool:
+        return bool(spec.text) and strip_filler(spec.text) != spec.text.strip()
+
+    def transform(self, messages: Sequence[Message], spec: TaskSpec) -> TransformResult:
+        original = last_user_text(messages)
+        rewritten = strip_filler(original)
+        if rewritten == original:
+            raise ValueError("minimal_context is not applicable: nothing to remove")
+        return self._result(replace_last_user(messages, rewritten))
+
+
 BUILTIN: tuple[Strategy, ...] = (
     Identity(),
     ConciseDirective(),
@@ -255,4 +303,5 @@ BUILTIN: tuple[Strategy, ...] = (
     SecurityGeneric(),
     StructuredSections(),
     RequirementsChecklist(),
+    MinimalContext(),
 )
