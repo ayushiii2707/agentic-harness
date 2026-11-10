@@ -10,7 +10,14 @@ import json
 import httpx
 import respx
 
-from adaptive_harness import AdaptiveHarness, HarnessConfig, Message, PersistenceConfig, ToolCall
+from adaptive_harness import (
+    AdaptiveHarness,
+    FinishReason,
+    HarnessConfig,
+    Message,
+    PersistenceConfig,
+    ToolCall,
+)
 from adaptive_harness.providers import create_adapter
 from adaptive_harness.types import CompletionRequest
 
@@ -206,11 +213,11 @@ def test_gemini_tool_results_become_function_response_parts() -> None:
     contents = json.loads(route.calls[0].request.content)["contents"]
     assert contents[1] == {
         "role": "model",
-        "parts": [{"functionCall": {"name": "get_weather", "args": {"city": "Oslo"}}}],
+        "parts": [{"functionCall": {"name": "get_weather", "args": {"city": "Oslo"}, "id": "call_1"}}],
     }
     assert contents[2] == {
         "role": "user",
-        "parts": [{"functionResponse": {"name": "get_weather", "response": {"temp_c": 4}}}],
+        "parts": [{"functionResponse": {"name": "get_weather", "response": {"temp_c": 4}, "id": "call_1"}}],
     }
 
 
@@ -224,3 +231,37 @@ def test_tool_messages_are_validated() -> None:
     assert Message.coerce(CONVERSATION[1]).tool_calls == (
         ToolCall("get_weather", '{"city": "Oslo"}', "call_1"),
     )
+
+
+@respx.mock
+def test_gemini_thought_signatures_are_returned_with_their_function_call() -> None:
+    """Regression (found live, 2026-11-10): Gemini thinking models reject a function call sent back without the
+    thoughtSignature they attached to it (HTTP 400)."""
+    route = respx.post("https://generativelanguage.googleapis.com/v1beta/models/g:generateContent").mock(
+        side_effect=[
+            httpx.Response(200, json={"candidates": [{"content": {"role": "model", "parts": [
+                {"functionCall": {"name": "get_weather", "args": {"city": "Oslo"}, "id": "c9"}, "thoughtSignature": "SIG"}
+            ]}, "finishReason": "STOP"}]}),
+            httpx.Response(200, json={"candidates": [{"content": {"role": "model", "parts": [{"text": "4 C"}]},
+                                                      "finishReason": "STOP"}]}),
+        ]
+    )  # fmt: skip
+    a = create_adapter("gemini", api_key="AIzaFAKEFAKEFAKEFAKEFAKEFAKEFAKEFAKE00")
+    first = a.complete(CompletionRequest.build("g", [Message("user", "Weather in Oslo?")]))
+    assert first.finish_reason is FinishReason.TOOL and first.tool_calls[0].signature == "SIG"
+    call = first.tool_calls[0]
+    a.complete(
+        CompletionRequest.build(
+            "g",
+            [
+                Message("user", "Weather in Oslo?"),
+                Message("assistant", "", tool_calls=(call,)),
+                Message("tool", '{"temp_c": 4}', tool_call_id=call.id, name=call.name),
+            ],
+        )
+    )
+    sent = json.loads(route.calls[1].request.content)["contents"][1]["parts"][0]
+    assert sent == {
+        "functionCall": {"name": "get_weather", "args": {"city": "Oslo"}, "id": "c9"},
+        "thoughtSignature": "SIG",
+    }

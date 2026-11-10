@@ -71,6 +71,7 @@ def _tool_calls(d: Mapping[str, Any]) -> tuple[ToolCall, ...]:
             str(p["functionCall"]["name"]),
             json.dumps(p["functionCall"].get("args") or {}),
             p["functionCall"].get("id"),
+            p.get("thoughtSignature"),
         )
         for p in parts
         if isinstance(p, dict) and isinstance(p.get("functionCall"), dict) and p["functionCall"].get("name")
@@ -113,7 +114,13 @@ class GeminiAdapter(ProviderAdapter):
                     args = json.loads(c.arguments or "{}")
                 except json.JSONDecodeError:
                     args = {"_raw": c.arguments}
-                parts.append({"functionCall": {"name": c.name, "args": args}})
+                call: dict[str, Any] = {"name": c.name, "args": args}
+                if c.id:
+                    call["id"] = c.id
+                part: dict[str, Any] = {"functionCall": call}
+                if c.signature:  # thinking models reject a function call without its signature
+                    part["thoughtSignature"] = c.signature
+                parts.append(part)
             if m.role == "tool":  # a tool result goes back as a functionResponse part (finding F11)
                 try:
                     response = json.loads(m.content)
@@ -121,7 +128,10 @@ class GeminiAdapter(ProviderAdapter):
                     response = {"result": m.content}
                 if not isinstance(response, dict):
                     response = {"result": response}
-                parts.append({"functionResponse": {"name": m.name or m.tool_call_id, "response": response}})
+                fr: dict[str, Any] = {"name": m.name or m.tool_call_id, "response": response}
+                if m.tool_call_id and m.name:
+                    fr["id"] = m.tool_call_id
+                parts.append({"functionResponse": fr})
             if not parts:
                 parts = [{"text": ""}]
             if contents and contents[-1]["role"] == role:
@@ -157,9 +167,10 @@ class GeminiAdapter(ProviderAdapter):
         if "candidates" not in d and "promptFeedback" not in d:
             raise MalformedResponseError("gemini: response has no candidates", provider=self.name)
         text, reason = _text(d)
+        calls = _tool_calls(d)
         return CompletionResult(
             text=text,
-            finish_reason=reason,
+            finish_reason=FinishReason.TOOL if calls and reason is FinishReason.STOP else reason,
             usage=_usage(d.get("usageMetadata")),
             model_reported=d.get("modelVersion"),
             latency_s=resp.latency_s,
@@ -167,7 +178,7 @@ class GeminiAdapter(ProviderAdapter):
             request_id=d.get("responseId"),
             fingerprint={"model_version": str(d["modelVersion"])} if d.get("modelVersion") else {},
             retries=resp.attempts - 1,
-            tool_calls=_tool_calls(d),
+            tool_calls=calls,
             raw=d,
         )
 

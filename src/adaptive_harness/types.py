@@ -18,11 +18,16 @@ _ROLES = ("system", "user", "assistant", "tool")
 
 @dataclass(frozen=True)
 class ToolCall:
-    """A tool call requested by the model, normalised across providers. ``arguments`` is the provider's JSON."""
+    """A tool call requested by the model, normalised across providers. ``arguments`` is the provider's JSON.
+
+    ``signature`` is an opaque provider token that must be sent back with the call (Gemini's ``thoughtSignature``
+    for thinking models; without it the next turn is rejected). It is never interpreted.
+    """
 
     name: str
     arguments: str
     id: str | None = None
+    signature: str | None = field(default=None, compare=False, repr=False)
 
 
 @dataclass(frozen=True)
