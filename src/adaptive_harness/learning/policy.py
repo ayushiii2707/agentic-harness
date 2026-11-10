@@ -4,8 +4,8 @@ Exploit (default): send ``identity`` unless some strategy s has
     - at least ``min_trials`` evaluated outcomes, as does identity, and
     - P(theta_s > theta_identity + min_gain) >= 1 - (1 - confidence) / k,
 where k is the number of challengers (a Bonferroni correction, so that several strategies each getting a lucky
-streak do not add up to a false switch). The probability is estimated by Monte-Carlo sampling from the Beta
-posteriors. With no evidence the rule never holds, so a fresh model always gets the original prompt.
+streak do not add up to a false switch). The probability is computed by numerical integration of the Beta
+posteriors (``learning/stats.py``). With no evidence the rule never holds, so a fresh model always gets the original prompt.
 
 ``min_trials`` is checked on each cell's own decayed outcome count (``ArmStats.n_eff``); borrowed priors never
 count towards it. A strategy that uses more tokens than identity must also beat it by the cost penalty
@@ -27,6 +27,9 @@ from dataclasses import dataclass
 from ..config import PolicyConfig
 from ..strategies import Strategy
 from .evidence import ArmStats
+from .stats import normal_approx, prob_greater
+
+SCREEN_MARGIN = 0.15  # the normal approximation's error is < 0.02 once both arms have >= 30 outcomes
 
 
 @dataclass(frozen=True)
@@ -41,6 +44,7 @@ class Policy:
     def __init__(self, config: PolicyConfig, rng: random.Random | None = None) -> None:
         self.config = config
         self.rng = rng or random.Random()
+        self._cache: dict[tuple[float, ...], float] = {}
 
     def _arm(self, s: Strategy, arms: dict[tuple[str, str], ArmStats]) -> ArmStats:
         return arms.get((s.info.id, s.info.version), ArmStats(s.info.id, s.info.version))
@@ -60,14 +64,20 @@ class Policy:
         return max(0.0, self.config.cost_weight * (a.mean_tokens / b.mean_tokens - 1.0))
 
     def p_better(self, a: ArmStats, b: ArmStats) -> float:
-        """P(theta_a > theta_b + min_gain + cost penalty) under independent Beta posteriors."""
-        n = self.config.mc_samples
+        """P(theta_a > theta_b + min_gain + cost penalty) under independent Beta posteriors (exact integral)."""
         g = self.config.min_gain + self.cost_penalty(a, b)
-        beat = sum(
-            self.rng.betavariate(a.alpha, a.beta) > self.rng.betavariate(b.alpha, b.beta) + g
-            for _ in range(n)
-        )
-        return beat / n
+        key = (round(a.alpha, 3), round(a.beta, 3), round(b.alpha, 3), round(b.beta, 3), round(g, 4))
+        p = self._cache.get(key)
+        if p is None:
+            p = prob_greater(a.alpha, a.beta, b.alpha, b.beta, g)
+            if len(self._cache) > 4096:
+                self._cache.clear()
+            self._cache[key] = p
+        return p
+
+    def _screen(self, a: ArmStats, b: ArmStats) -> float:
+        """Normal approximation; only used to skip challengers clearly below the threshold."""
+        return normal_approx(a.alpha, a.beta, b.alpha, b.beta, self.config.min_gain + self.cost_penalty(a, b))
 
     def choose(
         self,
@@ -103,6 +113,8 @@ class Policy:
             arm = self._arm(s, arms)
             if not self._enough(arm):
                 continue
+            if self._screen(arm, base) < required - SCREEN_MARGIN:
+                continue  # clearly short of the threshold; the approximation can only keep identity
             p = self.p_better(arm, base)
             if p > best_p:
                 best_p, best = p, s
