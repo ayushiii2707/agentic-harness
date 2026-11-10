@@ -179,7 +179,8 @@ class AdaptiveHarness:
                         self.ledger,
                         max_cost_per_call_usd=lc.max_cost_per_call_usd,
                         max_tokens=lc.max_tokens,
-                    )
+                    ),
+                    store=self.store,
                 )
             )
 

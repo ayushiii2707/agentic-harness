@@ -58,3 +58,20 @@ def test_parse_category() -> None:
     known = {"math", "general"}
     assert parse_category('```json\n{"category": "math"}\n```', known) == "math"
     assert parse_category('{"category": "algebra"}', known) is None
+
+
+def test_labels_persist_across_processes_and_failures_are_not_remembered(tmp_path: Path) -> None:
+    first = PaidMock(['{"category": "question_answering"}'])
+    assert harness(tmp_path, first).analyzer.analyze(VAGUE).category == "question_answering"
+    later = PaidMock(
+        []
+    )  # a new process: any call would fail (empty script), so the label must come from the store
+    assert (
+        harness(tmp_path, later).analyzer.analyze(VAGUE).category == "question_answering"
+        and later.requests == []
+    )
+    # an outage is not stored: the next process asks again
+    down = tmp_path / "down"
+    assert harness(down, PaidMock([])).analyzer.analyze(VAGUE).category == "general"
+    retry = PaidMock(['{"category": "research"}'])
+    assert harness(down, retry).analyzer.analyze(VAGUE).category == "research" and len(retry.requests) == 1
