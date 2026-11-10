@@ -5,10 +5,14 @@ how that specific model responds to different prompting strategies for different
 transforms your prompts automatically. By default it sends your original prompt unchanged until the evidence
 says a change helps.
 
-> **Status: pre-alpha.** The decision loop works end to end: tasks are classified, strategies are chosen from
-> stored evidence, outcomes you report update that evidence, and the next choice uses it. Calibration,
-> sandboxed evaluators, evidence decay and drift detection are not implemented yet. See
-> [docs/DESIGN.md](docs/DESIGN.md) and [docs/DEVLOG.md](docs/DEVLOG.md).
+> **Status: pre-alpha.** The decision loop works end to end:
+> - tasks are classified, and strategies are chosen from stored evidence;
+> - outcomes you report update that evidence, and the next choice uses it;
+> - evidence decays, borrows weakly from related cells, and drift marks a profile stale.
+>
+> Also built: budgeted calibration, a Docker sandbox for code checks, and an opt-in LLM rewriter with an
+> independent judge. Not built yet: automatic (unattended) calibration, orchestration and the research
+> experiments (Phases 11–13). See [docs/DESIGN.md](docs/DESIGN.md) and [docs/DEVLOG.md](docs/DEVLOG.md).
 
 ## Install (development)
 

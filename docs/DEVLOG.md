@@ -14,13 +14,11 @@
 - **Decision loop (root-cause fix):** done; pushed.
 - **Phase 9, evaluators and Docker sandbox:** done; pushed.
 - **Phase 7, calibration, plus the second loop review:** done; pushed.
-- **Phase 8, transformation engine and preservation check:** implemented and tested.
-  **Awaiting review.**
-- Not implemented yet:
-  - an LLM-based rewriting strategy (needs an equivalence judge; Phase 8 shipped the deterministic one);
-  - Phase 10: evidence decay, backoff, priors and drift;
-  - the cost term in the policy;
-  - automatic calibration.
+- **Phase 8, transformation engine and preservation check:** done; pushed.
+- **LLM rewriter with an independent judge:** done.
+- **Phase 10, evidence decay, backoff, priors, drift and the cost term:** done.
+- **Review of Phases 1–10:** done (`docs/reports/review_phases_1_10.md`). **Awaiting approval for Phase 11.**
+- Not implemented yet: automatic (unattended) calibration; Phases 11–13.
 
 ## 2026-11-09 to 2026-11-10: Phase 0
 - Audited LeBlanc v4 at commit `51522f2` (read-only clone; database queried read-only; recomputation on a copy).
@@ -332,7 +330,7 @@ resume without duplicates (test and live: 40 trials, 40 distinct pairs).
 
 **Tests:** 179 pass on the committed tree, including the real-Docker tests; ruff and mypy --strict are clean. (Running in the working folder shows 184 only because two leftover untracked files duplicate 5 tests.)
 
-**Remaining tables not yet used by any code path:** `prior_evidence` (Phase 10) and `task_category`
+**Remaining tables not yet used by any code path:** `prior_evidence` (used since Phase 10) and `task_category`
 (the taxonomy lives in `taxonomy.json`).
 
 ## 2026-11-10: Phase 8 (transformation engine and preservation check)
@@ -365,7 +363,7 @@ lets a short requirement disappear from a long prompt. The rule is now that ever
 
 **Limits, stated plainly:**
 - The check compares words, so it cannot recognise a faithful paraphrase. Paraphrasing rewriters need an
-  independent equivalence judge and are not implemented.
+  independent equivalence judge (added later: see "LLM rewriter with an independent judge").
 - The pleasantry list (`FILLER`) is the only content a rewrite may drop.
 
 ## 2026-11-10: LLM rewriter with an independent judge (Phase 8, second part)
@@ -398,3 +396,26 @@ version changes with the model pair; never offered for `general` prompts.
 **Limits:** the judge is itself a model and can be wrong; the exact checks are the floor. Whether `llm_rewrite`
 improves outcomes for any model is an empirical question for the policy and calibration, like every strategy.
 Async calls run the auxiliary calls synchronously inside planning.
+
+## 2026-11-10: Phase 10 (decay, backoff, priors, drift, cost term)
+**Built:**
+- `learning/evidence.py`: decayed counts and `n_eff`, token summaries, backoff on read, matching prior records.
+- `learning/policy.py`: `n_eff` gate and the cost penalty.
+- `learning/priors.py`: six LeBlanc v4 records (DESIGN §6.6, as implemented).
+- `learning/drift.py`: the windowed drift test and `mark_drift`.
+- `ModelRegistry.next_profile`; the calibrator starts a new profile version when the current one is stale.
+- `scripts/simulate_drift.py`: threshold tuning (DESIGN §6.7, as implemented).
+
+**Tests (9 new):** decay halves evidence per half-life and new outcomes add to the decayed counts; decayed
+evidence stops exploitation; backoff weights are capped and never count as own trials; priors match only the
+tested model and category, and are idempotent; priors alone never switch; drift alarms on a shift and not on
+noise; drift → stale → identity → recalibration → profile version 2; the cost penalty blocks a +20 pp strategy
+that costs 4× the tokens, and never rewards cheaper ones; token summaries arrive through the harness.
+
+**Policy simulation, re-run with the cost term on** (`scripts/simulate_policy.py`, 40 runs × 400 calls,
+simulated): no strategy better: 0/40 false switches (2/40 before Phase 10); role_framing truly better: found in
+39/40.
+
+## 2026-11-10: Review of Phases 1–10
+See `docs/reports/review_phases_1_10.md`. One real defect was found and fixed (D40: prompt fragments in stored
+trace notes). Everything else was verified as described there.

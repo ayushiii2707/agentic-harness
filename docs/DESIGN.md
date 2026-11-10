@@ -376,6 +376,17 @@ This lets sparse categories borrow strength without being overwritten by it.
 **Time decay:** before each update, pseudo-counts are discounted by γ^(Δt / half-life). The default half-life is
 90 days for pinned versions and 21 days for aliases. Old evidence fades instead of being trusted forever.
 
+**As implemented (Phase 10, `learning/evidence.py`):**
+- Decay is applied to the stored counts before each update and again when they are read: factor
+  0.5^(age / half-life), half-life 90 days (21 for aliases), `PolicyConfig.half_life_days`.
+- `ArmStats.n_eff` is the cell's own decayed outcome count. The policy compares only cells with
+  `n_eff` ≥ `min_trials`, so evidence older than about one half-life has to be re-confirmed. This also covers the
+  "age" trigger of §6.7.
+- Backoff is applied on read: the parent category (weight ≤ 4), otherwise the strategy's pool over the profile's
+  other categories (weight ≤ 2). A weight never exceeds the amount of evidence it comes from. Borrowed and prior
+  pseudo-counts change the estimate, never `n_eff`, so they cannot by themselves move the policy off identity.
+- Each cell keeps a decayed token summary (`summary_json`: total tokens per call).
+
 ### 6.3 Utility and cost
 
 utility(*s*) = P(success | *s*) − λ · E[cost(*s*)] / cost_ref.
@@ -384,6 +395,10 @@ utility(*s*) = P(success | *s*) − λ · E[cost(*s*)] / cost_ref.
 - cost_ref is the identity strategy's mean cost for that cell.
 - Token growth from additive strategies, *including the longer outputs they cause*, is part of the cost.
   LeBlanc measured +44% total tokens from a one-line preamble.
+
+**As implemented (Phase 10):** tokens are the cost measure (dollar cost is often unreported, especially on free
+tiers). A challenger must beat identity by δ + λ·(tokens_s / tokens_identity − 1), with λ = `cost_weight` = 0.1.
+The penalty is never negative: a cheaper strategy still has to beat identity by δ.
 
 ### 6.4 Decision rule (normal request path)
 
@@ -395,8 +410,7 @@ utility(*s*) = P(success | *s*) − λ · E[cost(*s*)] / cost_ref.
      ≥ 1 − (1 − 0.90)/k, where k is the number of challengers (Bonferroni). Estimated by Monte-Carlo from the
      posteriors; δ is the minimum worthwhile gain (default 0.02).
    - Otherwise send `identity`.
-   - The cost term of §6.3 is not applied yet; it needs the token/cost summaries that Phase 10 adds to
-     `arm_stats`.
+   - The cost term of §6.3 raises the margin for strategies that use more tokens (Phase 10).
 3. **Exploration** (opt-in, `PolicyConfig.exploration_rate`):
    - Only on calls whose outcome will be observed (the caller passed `check=`); never otherwise (principle 3).
    - With probability `exploration_rate`, the strategy is drawn **uniformly** among the candidates, identity
@@ -490,6 +504,14 @@ data overrides it quickly. LeBlanc results map to category `security_sensitive_c
 `security_generic` / `security_targeted`. They are recorded with LeBlanc's metric (security-test failure, lenient,
 45 tasks) and **do not** transfer to other categories or models.
 
+**As implemented (Phase 10, `learning/priors.py`):** six LeBlanc v4 records ship as data: the secure-and-working
+rate, plain vs `generic` (the exact sentence of `security_generic`), for gpt-oss-20b (36.1% vs 31.3%),
+gemini-3.5-flash-lite (27.4% vs 32.6%) and deepseek-v4.1-flash (35.1% vs 44.8%), 168 outputs per arm. They apply
+only to `security_sensitive_code` cells of a model with the same ID (vendor prefix ignored). The host as tested is
+not recorded, so the weight is halved to 1.5 pseudo-observations. They are loaded into `prior_evidence` on start
+(`PolicyConfig.prior_evidence`). LeBlanc's security-test-failure metric is not used, because the harness learns
+from pass/fail outcomes.
+
 ### 6.7 Change detection and recalibration
 
 Three triggers mark a profile `stale` and schedule recalibration, within budget:
@@ -501,6 +523,19 @@ Three triggers mark a profile `stale` and schedule recalibration, within budget:
 
 A stale profile keeps serving (decayed estimates are still informative) but **stops exploiting non-identity
 strategies whose advantage depended on the decayed evidence**, until recalibrated.
+
+**As implemented (Phase 10, `learning/drift.py`):**
+- Trigger 1 (fingerprint) was implemented in Phase 4. Trigger 3 (age) is covered by decay and the `n_eff` gate.
+- For trigger 2, a windowed test replaces CUSUM/Page–Hinkley. After each counted outcome, the cell's last 30
+  outcomes are compared with up to 120 before them (two-proportion z).
+- At |z| ≥ 4.0 the profile becomes `stale` and a `drift` change event is recorded. While a profile is stale, the
+  policy uses identity.
+- Threshold choice (`scripts/simulate_drift.py`, simulated):
+  - z = 4.0: 4/399 false alarms over 500 stationary outcomes; a 0.8→0.4 drop is caught in 93/100 runs, with a
+    median delay of 24 outcomes.
+  - z = 3.5: 28/399 false alarms, above the 5% target.
+- Recalibrating a stale profile starts the next profile version (`ModelRegistry.next_profile`) with no evidence.
+  The stale profile is kept for audit.
 
 ### 6.8 Statistics used for research (Phase 12), separate from the policy
 

@@ -6,8 +6,8 @@
 |---|---|---|
 | Your prompt (possibly transformed by the harness) | The provider you configured (e.g. Groq, Gemini, a local Ollama) | Every `generate` / `chat` call |
 | Model metadata requests | The same provider (`/models`, `models.get`, `/api/show`) | Only when `model_info()` is called |
-| Calibration prompts (our own suites) | The same provider | Only when you run calibration with a budget > 0 (later phase) |
-| Prompts sent to a judge or rewriter model | A provider you choose for that role | Only if you enable those optional features (later phases) |
+| Calibration prompts (our own suites) | The same provider | Only when you run `Calibrator(...).run()` |
+| Your prompt, sent to a rewriter model and then (with the rewrite) to a judge model | The providers you name in `RewriterConfig` | Only if you set `HarnessConfig.rewriter`, and only when `llm_rewrite` is tried for that prompt |
 
 There is **no telemetry**. The harness never contacts any other service. With a local provider (Ollama, vLLM,
 LM Studio) nothing leaves your machine.

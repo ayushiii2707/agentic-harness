@@ -122,3 +122,22 @@ approval; "Decided" entries were made by the owner or follow from their instruct
   required for it, because paraphrase changes words. Every failure, including budget refusal, sends the original.
   *Reason:* live probes showed the judge catches dropped, added and inverted requirements that pass the exact
   checks, while the exact checks catch number and literal changes cheaply before any judge call.
+
+## 2026-11-10 (Phase 10)
+
+- **D35.** Decay is applied at write and read time, with a 90-day half-life (21 for aliases). The policy gates on
+  the cell's own decayed count (`n_eff` ≥ `min_trials`), so the "age" trigger of DESIGN §6.7 needs no separate
+  rule.
+- **D36.** Backoff and prior evidence change the estimate (alpha/beta), never the gate (`n_eff`). A borrowed weight
+  never exceeds the evidence it comes from. *Reason:* the policy must not leave identity on borrowed or external
+  evidence alone.
+- **D37.** LeBlanc v4 priors use the secure-and-working rate, not security-test failure. The harness learns from
+  pass/fail outcomes, and secure-and-working is the pass/fail outcome that LeBlanc measured. The host as tested is
+  not recorded, so the weight is 1.5.
+- **D38.** Cost uses tokens (cost in dollars is often unreported). The penalty is λ·(token ratio − 1), clipped at
+  0, so cost can only make switching harder.
+- **D39.** Drift uses a windowed two-proportion test (30 recent outcomes against up to 120 earlier ones,
+  |z| ≥ 4.0) instead of CUSUM. *Reason:* it is simple to verify, and its threshold was tuned by simulation:
+  about 1% false alarms over 500 outcomes, and a 0.8→0.4 drop detected in 93% of runs.
+- **D40.** Diagnostic notes are stored with quoted spans removed when `prompt_storage="none"`. *Reason:* the review
+  found that rejection reasons had stored prompt fragments.
