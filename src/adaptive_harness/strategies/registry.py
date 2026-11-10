@@ -2,6 +2,9 @@
 
 from __future__ import annotations
 
+import json
+
+from ..store import Store
 from ..tasks import GENERAL, TaskSpec
 from .base import Strategy
 from .builtin import BUILTIN
@@ -30,6 +33,26 @@ class StrategyRegistry:
 
     def all(self) -> list[Strategy]:
         return list(self._by_key.values())
+
+    def sync_with_store(self, store: Store) -> list[str]:
+        """Record each strategy's content hash; disable any whose wording no longer matches the stored hash.
+
+        Evidence is keyed by (id, version). If the text of a strategy changed without a version bump, its old
+        evidence describes a different prompt, so the strategy must not be chosen on that evidence. Returns the
+        disabled ``id@version`` keys (identity is never disabled).
+        """
+        disabled = []
+        for (sid, ver), s in list(self._by_key.items()):
+            meta = json.dumps({"description": s.info.description, "applies_to": list(s.info.applies_to)})
+            store.execute(
+                "INSERT OR IGNORE INTO strategy(id, version, content_hash, kind, metadata_json) VALUES (?,?,?,?,?)",
+                (sid, ver, s.content_hash, s.info.kind, meta),
+            )
+            row = store.query_one("SELECT content_hash FROM strategy WHERE id=? AND version=?", (sid, ver))
+            if row is not None and row["content_hash"] != s.content_hash and sid != "identity":
+                del self._by_key[(sid, ver)]
+                disabled.append(f"{sid}@{ver}")
+        return disabled
 
     def candidates(self, spec: TaskSpec) -> list[Strategy]:
         """Strategies that may be tried for this task. Identity always comes first.

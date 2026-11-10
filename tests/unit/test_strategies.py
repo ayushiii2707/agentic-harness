@@ -99,3 +99,23 @@ def test_reregistering_changed_content_requires_a_new_version() -> None:
     reg.register(Custom())  # identical content is fine
     with pytest.raises(ValueError):
         reg.register(Changed())
+
+
+def test_changed_wording_under_the_same_version_is_disabled_against_stored_evidence(tmp_path: Path) -> None:
+    from adaptive_harness.store import Store
+
+    class V1(Strategy):
+        info: ClassVar[StrategyInfo] = StrategyInfo("custom", "1", "additive", "d", "u", "l")
+        templates: ClassVar[dict[str, str]] = {"system": "Old wording."}
+
+        def transform(self, messages, spec):  # type: ignore[no-untyped-def]
+            return self._result(messages)
+
+    class V1Edited(V1):
+        templates: ClassVar[dict[str, str]] = {"system": "New wording."}
+
+    store = Store(tmp_path / "h.db")
+    assert StrategyRegistry((BUILTIN[0], V1())).sync_with_store(store) == []
+    reg = StrategyRegistry((BUILTIN[0], V1Edited()))
+    assert reg.sync_with_store(store) == ["custom@1"]
+    assert [s.info.id for s in reg.all()] == ["identity"]
