@@ -49,6 +49,18 @@ def transport(attempts: int = 3, total_wait: float = 90.0) -> tuple[HTTPTranspor
             '{"error":{"code":"insufficient_quota","message":"You exceeded your current quota"}}',
             QuotaExceededError,
         ),
+        # Bodies below are the wording real providers returned on 2026-11-10 (key-free).
+        (
+            400,
+            '{"type":"error","error":{"type":"invalid_request_error","message":"Your credit balance is too low to access the Anthropic API."}}',
+            QuotaExceededError,
+        ),
+        (
+            429,
+            '{"error":{"message":"You have no credits remaining. Add credits to continue."}}',
+            QuotaExceededError,
+        ),
+        (402, '{"error":"Add usage credits or subscribe"}', QuotaExceededError),
         (429, '{"error":{"message":"slow down"}}', RateLimitError),
         (400, '{"error":{"message":"This model maximum context length is 8192 tokens"}}', ContextLengthError),
         (400, '{"error":{"message":"unknown field"}}', InvalidRequestError),

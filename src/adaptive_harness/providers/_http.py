@@ -46,7 +46,16 @@ _CONTEXT_HINTS = (
     "input is too long",
     "reduce the length",
 )
-_QUOTA_HINTS = ("insufficient_quota", "exceeded your current quota", "billing", "credit", "payment required")
+_QUOTA_HINTS = (
+    "insufficient_quota",
+    "exceeded your current quota",
+    "billing",
+    "credit balance",
+    "credits remaining",
+    "usage credits",
+    "insufficient credits",
+    "payment required",
+)
 
 
 @dataclass
@@ -100,7 +109,8 @@ def map_error(provider: str, status: int, body: str, headers: Mapping[str, str])
     text = f"{provider} HTTP {status}: {msg}"
     if status in (401, 403) or "api_key_invalid" in low or "api key not valid" in low:
         return AuthenticationError(text, **kw)
-    if status == 402 or (status == 429 and any(h in low for h in _QUOTA_HINTS)):
+    # Anthropic reports an empty balance as HTTP 400, OpenAI as 429; both are hard quota, not retryable.
+    if status == 402 or (status in (400, 429) and any(h in low for h in _QUOTA_HINTS)):
         return QuotaExceededError(text, **kw)
     if status == 429:
         return RateLimitError(text, retry_after=parse_retry_after(headers, body), **kw)
