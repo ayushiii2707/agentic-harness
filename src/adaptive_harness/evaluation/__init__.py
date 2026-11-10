@@ -9,8 +9,17 @@ from __future__ import annotations
 import enum
 from collections.abc import Callable
 from dataclasses import dataclass
+from typing import Protocol, Union, runtime_checkable
 
-Check = Callable[[str], "bool | float"]
+
+@runtime_checkable
+class Evaluator(Protocol):
+    """Anything with ``evaluate(text) -> EvaluationResult`` (see ``evaluation.builtin``)."""
+
+    def evaluate(self, text: str) -> EvaluationResult: ...
+
+
+Check = Union[Callable[[str], "bool | float"], Evaluator]  # noqa: UP007 - runtime alias on Python 3.10
 
 
 class EvalStatus(str, enum.Enum):
@@ -60,11 +69,17 @@ def _from_value(value: object, evaluator_id: str) -> EvaluationResult:
 
 
 def run_check(check: Check, text: str) -> EvaluationResult:
-    """Run a developer-supplied check on the model's answer. A crashing check is an evaluation error."""
+    """Run a check (a function or an Evaluator) on the model's answer. A crashing check is an evaluation error."""
+    evaluator_id = getattr(check, "evaluator_id", "user_check")
     try:
-        return _from_value(check(text), "user_check")
+        if isinstance(check, Evaluator):
+            result = check.evaluate(text)
+            if not isinstance(result, EvaluationResult):
+                raise TypeError("evaluate() must return an EvaluationResult")
+            return result
+        return _from_value(check(text), evaluator_id)
     except Exception as e:  # the check is the developer's code; its failure is not the model's
-        return EvaluationResult(EvalStatus.ERROR, "user_check", details=f"{type(e).__name__}: {e}"[:300])
+        return EvaluationResult(EvalStatus.ERROR, evaluator_id, details=f"{type(e).__name__}: {e}"[:300])
 
 
 def feedback_result(success: bool | None = None, score: float | None = None) -> EvaluationResult:
