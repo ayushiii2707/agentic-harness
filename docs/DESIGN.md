@@ -430,6 +430,23 @@ before the cap, not after.
 - Without calibration, the harness runs on priors and the identity default. This is safe and clearly reported in
   `harness.profile()`.
 
+**As implemented (2026-11-10, `calibration/`):**
+- Calibration is explicit (`Calibrator(harness, max_calls=..., max_cost_per_call_usd=...).run(...)` or
+  `scripts/calibrate.py`); nothing calibrates automatically yet.
+- Every calibration call goes through `AdaptiveHarness.run_trial`, which is the normal request path with the
+  strategy fixed. So calibration and online use share task analysis, the transform guard, trial records,
+  evaluation and evidence updates.
+- **Evidence is keyed by the classifier's predicted category, not by the suite's label** (D29). Each suite
+  splits into cells by predicted label, and each cell is calibrated separately. A cell where only identity
+  applies is skipped at no cost.
+- Suites are our own: `math` and `structured_output` (100 generated tasks each, with disjoint calibration and
+  held-out splits) and `code_generation` (30 hand-written tasks, unit tests run in the Docker sandbox; every
+  reference solution is verified to pass and a wrong one to fail).
+- Stopping: after each batch of 10 paired tasks, a non-identity arm is eliminated when
+  P(best > arm + δ) ≥ 0.95.
+- The report states, per cell, whether the policy can use it (`min_trials` reached) and the minimum detectable
+  effect.
+
 ### 6.6 Prior evidence (LeBlanc and literature)
 
 External evidence is stored as `PriorEvidence` records, never as code:

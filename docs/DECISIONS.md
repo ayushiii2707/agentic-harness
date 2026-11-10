@@ -95,3 +95,12 @@ approval; "Decided" entries were made by the owner or follow from their instruct
 - **D28.** Exploration is uniform among candidates, not Thompson sampling. Comparisons need `min_trials` (30)
   for both arms, and the threshold is Bonferroni-corrected. *Reason:* measured false-switch rate 15/40 → 2/40
   in simulation (DESIGN §6.4, revision note).
+
+## 2026-11-10 (Phase 7 and second loop review)
+
+- **D29.** Evidence is keyed by the category the harness's classifier predicts, in calibration as at request
+  time. *Reason:* keying calibration evidence by the suite's true label created a training/serving skew.
+  Decisions are made per predicted label, so evidence must be estimated on the prompts that receive that label.
+- **D30.** Calibration skips cells where only identity applies (no comparison is possible).
+- **D31.** Strategy content hashes are persisted in the `strategy` table. A strategy whose stored hash differs
+  from its current wording under the same version is disabled, so old evidence is never applied to new wording.

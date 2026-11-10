@@ -11,10 +11,15 @@
 - **Phase 5, task understanding:** done; pushed. Held-out test accuracy 0.688 (see
   `docs/reports/phase5_classifier.md`).
 - **Phase 6, strategy library:** done; pushed.
-- **Decision loop (root-cause fix, 2026-11-10):** implemented, simulated, and live-checked on Groq. See below.
+- **Decision loop (root-cause fix):** done; pushed.
+- **Phase 9, evaluators and Docker sandbox:** done; pushed.
+- **Phase 7, calibration, plus the second loop review:** implemented, tested, live-checked on Groq.
   **Awaiting review.**
-- Not implemented yet: calibration (Phase 7), sandboxed and format evaluators (Phase 9), evidence decay, backoff,
-  priors and drift (Phase 10), and the full preservation check for rewriting strategies (Phase 8).
+- Not implemented yet:
+  - Phase 8: the full preservation check for rewriting strategies;
+  - Phase 10: evidence decay, backoff, priors and drift;
+  - the cost term in the policy;
+  - automatic calibration.
 
 ## 2026-11-09 to 2026-11-10: Phase 0
 - Audited LeBlanc v4 at commit `51522f2` (read-only clone; database queried read-only; recomputation on a copy).
@@ -274,3 +279,57 @@ Phases 4–13 as listed in `DESIGN.md` §14, each gated on owner approval.
 - Live: Groq `gpt-oss-20b` wrote `is_prime`; the code was run in the sandbox against unit tests (success), and
   the outcome was recorded as evidence.
 - Not done: gVisor auto-detection; secondary (non-primary) evaluations on the request path.
+
+## 2026-11-10: Phase 7 (calibration) and the second loop review
+
+**Built:**
+- `calibration/suites.py`: three of our own suites.
+  - `math`: 100 generated multi-step word problems, `ReferenceAnswer`.
+  - `structured_output`: 100 generated extraction tasks, with exact field values via the new `JsonFields`.
+  - `code_generation`: 30 hand-written tasks, `UnitTests` in the sandbox.
+
+  The generated suites have disjoint calibration and held-out splits (200 / 200 prompts, overlap 0; a
+  first draft overlapped by 2 and was fixed).
+- All 30 code tasks are verified in the real sandbox: a reference solution passes and a wrong one fails
+  (`tests/sandbox/test_code_suite_references.py`).
+- `calibration/calibrator.py`: a paired design with successive elimination per cell, a per-call budget
+  reservation committed at the reported cost, resumable by experiment id, and a report with intervals,
+  usability and minimum detectable effect.
+- `AdaptiveHarness.run_trial`: one experiment call with a fixed strategy through the normal request path.
+- `scripts/calibrate.py`: real-provider calibration, writing a report to `docs/reports/`.
+- `scripts/loop_audit.py`: checks that calibrated evidence reaches new prompts.
+
+**Loop review: most significant limitation found (training/serving skew):**
+- Calibration stored evidence under each suite's true category, while the request path looked it up under the
+  classifier's predicted category.
+- Measured in simulation: 21 of 40 held-out math prompts were labelled `general`. Their decisions ignored the
+  calibrated evidence, while the `math` cell's numbers had been estimated partly on exactly such prompts. About
+  half of the math calibration calls were also spent on prompts that would never receive those strategies.
+- **Fix (D29):** calibration now runs through the same classifier and stores evidence under the predicted
+  label. Suites split into cells; cells where only identity applies are skipped at no cost.
+- After the fix: **200 of 200** held-out decisions matched the calibrated best for their own cell
+  (`scripts/loop_audit.py`, simulated).
+- **Still open:** 59 of 100 held-out math word problems are labelled `general`, so they get the original prompt
+  (classifier coverage, Phase 5). Paths forward: a better classifier, or parent/model-level backoff (Phase 10).
+
+**Second integrity gap found and fixed (D31):** the `strategy` table was never written, so a strategy whose
+wording changed without a version bump would silently mix its old evidence with the new prompt. Strategy
+content hashes are now persisted; a mismatching strategy is disabled with a warning.
+
+**Loop verified end to end** (each link has a test, and a live run where marked):
+classify → candidates → policy reads evidence → transform with guard → provider call (live: Groq, Gemini,
+Ollama, OpenRouter) → trial recorded → evaluation (live: reference answers; sandboxed unit tests) → evidence
+updated → next decision reads it (tests + audit) → calibration writes through the same path (live: Groq) →
+profile `cold` → `active`; a version change makes it `stale` (tests) → budget reservations and commits (tests) →
+resume without duplicates (test and live: 40 trials, 40 distinct pairs).
+
+**Live calibration (Groq `openai/gpt-oss-20b`, free, $0.00):**
+- 30 calls, then a resume with 10 more: 40 trials, all evaluated, no duplicates.
+- Every strategy scored 8 of 8, so this suite is at ceiling for this model. The report correctly marks the cell
+  not yet usable (minimum detectable effect 35 pp at that sample size).
+- A meaningful calibration needs either more calls or harder tasks.
+
+**Tests:** 184 pass, including 45 against real Docker. ruff and mypy --strict are clean.
+
+**Remaining tables not yet used by any code path:** `prior_evidence` (Phase 10) and `task_category`
+(the taxonomy lives in `taxonomy.json`).
