@@ -55,6 +55,7 @@ pythonpath = ["src"]  # import from the source tree even if an editable install 
 addopts = "-ra --strict-markers"
 markers = [
   "live: makes real network calls to a model provider (never run by default)",
+  "sandbox: runs code in the real Docker sandbox (skipped when Docker or the image is unavailable)",
 ]
 
 [tool.ruff]
