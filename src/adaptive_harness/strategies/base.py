@@ -2,7 +2,8 @@
 
 A strategy is a pure function from (messages, TaskSpec) to new messages. Version 1 strategies are ``identity``,
 ``additive`` (adds a harness instruction) or ``structural`` (wraps the user's text in a structure). All of them
-keep the user's own text verbatim. ``rewriting`` strategies are reserved for a later, gated phase.
+keep the user's own text verbatim. ``rewriting`` strategies change the user's text and are accepted only through
+the preservation checks in ``transform/``.
 
 Evidence is keyed by (id, version). ``content_hash`` covers the metadata and every template string, so any change
 to a strategy's wording changes its hash and must come with a new version.

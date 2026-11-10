@@ -10,8 +10,8 @@ A rewrite is accepted only if it keeps what the user asked for:
 
 The check is deterministic and conservative: when in doubt it rejects, and the harness then sends the original.
 Because it compares words, it cannot recognise a faithful *paraphrase*: rewrites may delete stop words and the
-listed pleasantries, nothing else. Paraphrasing rewriters (e.g. an LLM rewrite) need an independent equivalence
-judge on top of this check; that is not implemented.
+listed pleasantries, nothing else. Paraphrasing rewriters (``llm_rewrite``) are checked with ``exact_problems``
+only, plus an independent equivalence judge (see ``llm_rewrite.py``).
 """
 
 from __future__ import annotations
@@ -101,14 +101,17 @@ def _coverage(sentence: str, rewritten_words: set[str]) -> float:
     return sum(w in rewritten_words for w in words) / len(words)
 
 
-def check_rewrite(original: str, rewritten: str) -> PreservationResult:
-    problems: list[str] = []
+def exact_problems(original: str, rewritten: str) -> list[str]:
+    """Checks that hold for any faithful rewrite, including a paraphrase.
+
+    Required: exact numbers, literals, identifiers, paths, URLs, languages and formats; no fewer negations;
+    bounded length.
+    """
     if not rewritten.strip():
-        return PreservationResult(False, ("the rewrite is empty",))
+        return ["the rewrite is empty"]
+    problems: list[str] = []
     req = extract_requirements(original)
     low = rewritten.lower()
-    words = set(_WORD.findall(low))
-
     for n in sorted(set(_NUM.findall(original))):
         if n not in _NUM.findall(rewritten):
             problems.append(f"number {n!r} was dropped or changed")
@@ -128,6 +131,18 @@ def check_rewrite(original: str, rewritten: str) -> PreservationResult:
 
     if len(_NEG.findall(rewritten)) < len(_NEG.findall(original)):
         problems.append("a negation was dropped")
+    if len(original) >= 40:
+        ratio = len(rewritten) / len(original)
+        if not LENGTH_RATIO[0] <= ratio <= LENGTH_RATIO[1]:
+            problems.append(f"length changed too much (ratio {ratio:.2f})")
+    return problems
+
+
+def lexical_problems(original: str, rewritten: str) -> list[str]:
+    """Word-coverage checks for deletion-only rewrites (they cannot recognise a paraphrase)."""
+    problems: list[str] = []
+    req = extract_requirements(original)
+    words = set(_WORD.findall(rewritten.lower()))
     for s in req.negatives:
         if _coverage(s, words) < MIN_COVERAGE:
             problems.append(f"negative instruction not preserved: {s[:80]!r}")
@@ -141,9 +156,13 @@ def check_rewrite(original: str, rewritten: str) -> PreservationResult:
         if overall < MIN_OVERALL:
             missing = sorted({w for w in content if w not in words})[:8]
             problems.append(f"only {overall:.0%} of the original's content words remain (missing: {missing})")
+    return problems
 
-    if len(original) >= 40:
-        ratio = len(rewritten) / len(original)
-        if not LENGTH_RATIO[0] <= ratio <= LENGTH_RATIO[1]:
-            problems.append(f"length changed too much (ratio {ratio:.2f})")
+
+def check_rewrite(original: str, rewritten: str) -> PreservationResult:
+    """Full deterministic check for deletion-only rewrites: exact items plus word coverage."""
+    problems = exact_problems(original, rewritten)
+    if problems == ["the rewrite is empty"]:
+        return PreservationResult(False, tuple(problems))
+    problems += lexical_problems(original, rewritten)
     return PreservationResult(not problems, tuple(problems))

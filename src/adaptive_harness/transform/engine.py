@@ -6,7 +6,8 @@ Rules, for every strategy kind:
 - harness-added system messages may not contain the user's text (user content never moves into an instruction
   position);
 - identity, additive and structural strategies must keep the last user message verbatim;
-- rewriting strategies must pass ``check_rewrite``.
+- rewriting strategies must pass ``check_rewrite``; a strategy with a ``verify_rewrite`` judge (a paraphrasing
+  rewrite) must instead pass ``exact_problems`` and then its judge.
 
 Any exception or failed rule returns ``ok=False`` with the reason; the caller then sends the original messages.
 """
@@ -19,7 +20,7 @@ from dataclasses import dataclass
 from ..strategies import Strategy
 from ..tasks import TaskSpec
 from ..types import Message
-from .preservation import check_rewrite
+from .preservation import check_rewrite, exact_problems
 
 
 @dataclass(frozen=True)
@@ -61,9 +62,18 @@ def apply_strategy(strategy: Strategy, messages: Sequence[Message], spec: TaskSp
         return Applied(original, False, "user text was placed inside a system instruction")
 
     if strategy.info.kind == "rewriting":
-        result = check_rewrite(user_text, new_user_text)
-        if not result.ok:
-            return Applied(original, False, "rewrite rejected: " + "; ".join(result.problems)[:300])
+        verify = getattr(strategy, "verify_rewrite", None)
+        if verify is None:  # deletion-only rewrite: full deterministic check
+            problems = list(check_rewrite(user_text, new_user_text).problems)
+        else:  # paraphrasing rewrite: exact checks first, then the strategy's independent judge
+            problems = exact_problems(user_text, new_user_text)
+            if not problems:
+                try:
+                    problems = list(verify(user_text, new_user_text))
+                except Exception as e:
+                    problems = [f"judge failed: {type(e).__name__}: {e}"]
+        if problems:
+            return Applied(original, False, "rewrite rejected: " + "; ".join(problems)[:300])
     elif user_text not in new_user_text:
         return Applied(original, False, "the user's text was not kept verbatim")
     return Applied(new, True, changed=new != original)
