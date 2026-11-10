@@ -15,11 +15,11 @@ Paid providers are not called live unless strictly necessary (project rule: free
 | Google Gemini | native `gemini` | yes | **yes**, 2026-11-10, `gemini-3.5-flash-lite` | Free tier. `models.get` exposes context window, version and thinking support |
 | Ollama (local) | `openai_compatible` preset `ollama` | yes | see DEVLOG for the run after the model download | Free, no key. `/api/show` gives family, size, quantisation |
 | Ollama cloud | `openai_compatible` preset `ollama_cloud` | yes | **reached, not completed**: model listing works; chat returns HTTP 402 "add usage credits" | Not free for this account. Mapped to `QuotaExceededError` |
-| OpenAI | `openai_compatible` preset `openai` | yes | no (paid) | Uses `max_completion_tokens` |
-| OpenRouter | `openai_compatible` preset `openrouter` | yes | no (paid) | Reports per-call cost and serving host |
+| OpenAI | `openai_compatible` preset `openai` | yes | **reached, not completed** (2026-11-10): models listing works; chat returns HTTP 429 "no credits remaining" | Account has no credit. Mapped to `QuotaExceededError`. Uses `max_completion_tokens` |
+| OpenRouter | `openai_compatible` preset `openrouter` | yes | **yes**, 2026-11-10, `openai/gpt-oss-20b`, cost $0.0000066 | Reports per-call cost and serving host (DeepInfra) |
 | DeepSeek | `openai_compatible` preset `deepseek` | yes | no (no key) | |
 | vLLM, LM Studio | `openai_compatible` presets | yes | no (no local server) | |
-| Anthropic | native `anthropic` (Messages API, version `2026-10-21`) | yes | no (paid) | `temperature`/`top_p` are not accepted by this API version; they are dropped and recorded in `dropped_settings` |
+| Anthropic | native `anthropic` (Messages API, version `2026-10-21`) | yes | **reached, not completed** (2026-11-10): models listing works; chat returns HTTP 400 "credit balance is too low" | Account has no credit. Mapped to `QuotaExceededError`. `temperature`/`top_p` are not accepted by this API version; they are dropped and recorded in `dropped_settings` |
 
 ## Free model availability (checked 2026-11-10, listing calls only)
 

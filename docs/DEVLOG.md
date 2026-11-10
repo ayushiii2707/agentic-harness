@@ -58,14 +58,22 @@
 **Tests:** 77 offline tests pass (unit + contract); `ruff check` and `ruff format` are clean; `mypy --strict`
 is clean on 22 source files. Contract fixtures are synthetic bodies in each provider's documented format.
 
-**Live verification (2026-11-10, $0.00 spent):**
+**Live verification (2026-11-10):**
 - Groq `openai/gpt-oss-20b`: ok. 78 input / 58 output tokens, 48 of them reasoning; `system_fingerprint`
   captured; context window 131,072 from `/models`.
 - Gemini `gemini-3.5-flash-lite`: ok. `models.get` gives a 1,048,576 context window, version
   `3.5-flash-lite-07-2026`, thinking supported.
 - Ollama cloud: model listing works; chat returns **HTTP 402 "add usage credits"**, so it is not free for this
   account and is reclassified as paid.
-- OpenAI, Anthropic, OpenRouter: **not called** (paid), as instructed.
+- Paid checks, approved by the owner with a limit of $0.01 per call (each call reserved $0.005 first):
+  - OpenRouter `openai/gpt-oss-20b`: ok. Served by DeepInfra; cost **$0.0000066** as reported by OpenRouter.
+  - OpenAI `gpt-4o-mini`: key accepted, but the account has **no credits** (HTTP 429). Nothing charged.
+  - Anthropic `claude-haiku-5-5`: key accepted, but the **credit balance is too low** (HTTP 400). Nothing
+    charged.
+  - This showed that Anthropic signals an empty balance with HTTP 400, which had been classified as an invalid
+    request. Fixed: billing wording on 400/429 now maps to `QuotaExceededError`, with tests using the real
+    (key-free) wording.
+  - Total paid spend so far: **$0.0000066** of the $10 cap.
 - Finding: the three LeBlanc v4 models are reachable without OpenRouter. `openai/gpt-oss-20b` (Groq, free) and
   `gemini-3.5-flash-lite` (Gemini, free) are callable; `deepseek-v4.1-flash:1017` is listed on Ollama cloud but
   needs credits.
@@ -80,8 +88,8 @@ is clean on 22 source files. Contract fixtures are synthetic bodies in each prov
   recorded.
 
 ## Known issues / open questions
-- Anthropic, OpenAI and OpenRouter adapters are contract-tested only (paid). One live call each would cost
-  < $0.01, but it is only run if you approve.
+- OpenAI and Anthropic chat calls cannot be completed until those accounts have credit. Their adapters are
+  contract-tested, and their auth, model listing and error paths are live-checked.
 - Dataset licences for IFEval, GSM8K, HumanEval and MBPP must be verified before Phase 12 (CodeSecEval: local only).
 - Python 3.10–3.12 compatibility is checked by mypy (`python_version = 3.10`) but tests have only run on 3.13;
   CI across versions comes in Phase 13.
