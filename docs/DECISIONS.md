@@ -113,3 +113,12 @@ approval; "Decided" entries were made by the owner or follow from their instruct
   list may be deleted; numbers, literals, identifiers, paths, URLs, languages and formats must stay exact.
   *Reason:* a 90% threshold accepted a rewrite that dropped part of the task (mutation test). Paraphrase needs a
   judge, which is not implemented.
+
+## 2026-11-10 (LLM rewriter)
+
+- **D34.** `llm_rewrite` is accepted only when the exact checks (numbers, literals, identifiers, paths, URLs,
+  languages, formats, negation count, length) pass **and** an independent judge model (not the rewriter) returns
+  strict JSON saying the texts are equivalent with nothing missing, added or changed. Word coverage is not
+  required for it, because paraphrase changes words. Every failure, including budget refusal, sends the original.
+  *Reason:* live probes showed the judge catches dropped, added and inverted requirements that pass the exact
+  checks, while the exact checks catch number and literal changes cheaply before any judge call.

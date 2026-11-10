@@ -229,9 +229,17 @@ learned profiles.
   - **every** content word of the original remains (only stop words and an explicit list of pleasantries may be
     deleted);
   - the length ratio stays within 0.4–2.5.
-- A word-level check cannot recognise a faithful paraphrase, so the only rewriting strategy shipped is the
-  deterministic `minimal_context` (it removes greetings, thanks and politeness phrases). The planned `llm_rewrite`
-  needs an independent equivalence judge first and is not implemented.
+- A word-level check cannot recognise a faithful paraphrase. The deterministic `minimal_context` (it removes
+  greetings, thanks and politeness phrases) is checked with the full `check_rewrite`.
+- `llm_rewrite` (opt-in, `HarnessConfig.rewriter`) paraphrases with an auxiliary rewriter model. Its output is
+  checked with `exact_problems` (exact items, negation count, length ratio; no word coverage) and then by an
+  independent judge, which must be a different provider/model from the rewriter. The judge must answer
+  `{"equivalent": true}` with empty `missing`/`added`/`changed` lists; anything else, including malformed JSON,
+  rejects the rewrite. Both texts reach the auxiliary models as tagged data.
+- Each auxiliary call reserves `max_cost_per_call_usd` in the budget ledger and commits the reported cost, or the
+  full reservation if none is reported. Local providers are free. With the default $0 budget, remote auxiliary
+  calls are refused and the original prompt is sent. The strategy's version encodes the model pair, so evidence
+  for one rewriter/judge pair is never used for another. Rewrites and verdicts are cached per prompt in memory.
 - Earlier drafts of the check allowed 10% of content words to go missing; a mutation test showed that this let a
   rewrite drop "that returns ISO dates" from a prompt, so the requirement became 100%.
 

@@ -367,3 +367,34 @@ lets a short requirement disappear from a long prompt. The rule is now that ever
 - The check compares words, so it cannot recognise a faithful paraphrase. Paraphrasing rewriters need an
   independent equivalence judge and are not implemented.
 - The pleasantry list (`FILLER`) is the only content a rewrite may drop.
+
+## 2026-11-10: LLM rewriter with an independent judge (Phase 8, second part)
+**Built:**
+- `transform/preservation.py` split into `exact_problems` (paraphrase-tolerant) and `lexical_problems`
+  (word coverage); `check_rewrite` is still both, unchanged in behaviour.
+- `transform/llm_rewrite.py`: `AuxModel` (one budgeted auxiliary call), `LlmRewrite`, `build_llm_rewrite`,
+  `parse_rewrite`, `parse_verdict`. Opt-in through `RewriterConfig`.
+- The engine uses `exact_problems` plus the strategy's `verify_rewrite` judge for strategies that have one.
+
+**Tests (mocks, 24):** faithful rewrite judged then sent; changed number, dropped negation, dropped literal,
+judge "not equivalent", judge listing an addition, non-JSON and non-boolean verdicts all send the original; exact
+failures never reach the judge; a missing `<rewritten>` block and a provider error fail closed; a $0 budget
+refuses before the rewriter is called; an unknown cost commits the full reservation and then blocks the judge;
+injection text never reaches a system message; rewrites and verdicts are cached; the judge must differ; the
+version changes with the model pair; never offered for `general` prompts.
+
+**Live check (free tier, $0 actual spend):** Groq `openai/gpt-oss-20b` as rewriter, Gemini
+`gemini-3.5-flash-lite` as judge.
+- First run: the rewriter turned "3" into "three" and "20 chars" into "20 characters"; the exact checks rejected
+  all three rewrites. The rewriter instructions now say to copy numbers, units and negations as written; the
+  exact checks were not loosened.
+- With `max_tokens=800`, gpt-oss spent all 800 tokens reasoning and returned no text (failed closed). The default
+  became 2000.
+- After both fixes, all three prompts (including an injection attempt) were rewritten, judged equivalent and sent.
+- Judge probes on one CSV prompt: a rewrite that drops "skip rows where age is empty", one that adds "sorted by
+  city", and one that inverts the condition all passed the exact checks and were all rejected by the judge with
+  the right reason; the faithful rewrite was accepted.
+
+**Limits:** the judge is itself a model and can be wrong; the exact checks are the floor. Whether `llm_rewrite`
+improves outcomes for any model is an empirical question for the policy and calibration, like every strategy.
+Async calls run the auxiliary calls synchronously inside planning.
