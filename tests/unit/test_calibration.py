@@ -130,3 +130,25 @@ def test_report_markdown_lists_every_arm(tmp_path: Path) -> None:
     for a in [a for c in report.cells for a in c.arms]:
         assert a.strategy_id in md
     assert "could reliably detect" in md
+
+
+def test_a_paid_provider_cannot_be_calibrated_with_a_zero_reservation(tmp_path: Path) -> None:
+    """Regression (evaluation F1): a $0 reservation let a provider that reports no cost spend past the cap."""
+    from adaptive_harness.providers.base import ProviderCapabilities
+
+    class PaidNoCost(MockProvider):
+        def capabilities(self) -> ProviderCapabilities:
+            return ProviderCapabilities(local=False)
+
+        def complete(self, request):  # type: ignore[no-untyped-def]
+            from dataclasses import replace
+
+            return replace(super().complete(request), cost_usd=None)
+
+    model = PaidNoCost(lambda r: "1")
+    h = harness(tmp_path, model, budget=0.005)
+    with pytest.raises(ConfigurationError):
+        Calibrator(h, max_calls=50, max_cost_per_call_usd=0.0)
+    report = Calibrator(h, max_calls=50, max_cost_per_call_usd=0.001).run(("math",))
+    assert report.calls == len(model.requests) == 5  # the cap stops it: 5 x $0.001 = $0.005
+    assert h.ledger is not None and h.ledger.spent_usd() == pytest.approx(0.005)

@@ -8,7 +8,7 @@ Any refusal or failure raises; callers fail closed.
 from __future__ import annotations
 
 from .budget import BudgetLedger
-from .errors import BudgetExceededError
+from .errors import BudgetExceededError, ConfigurationError
 from .providers.base import ProviderAdapter
 from .types import CompletionRequest, GenerationSettings, Message
 
@@ -29,6 +29,11 @@ class AuxModel:
         self.max_cost = max_cost_per_call_usd
         self.max_tokens = max_tokens
         self.local = adapter.capabilities().local
+        if not self.local and max_cost_per_call_usd <= 0:
+            # see Calibrator: a $0 reservation would let a provider that reports no cost spend without limit
+            raise ConfigurationError(
+                f"auxiliary model {adapter.name}/{model} is not local: max_cost_per_call_usd must be > 0"
+            )
         self.calls = 0
 
     @property

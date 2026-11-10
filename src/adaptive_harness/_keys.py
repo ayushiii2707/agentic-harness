@@ -90,13 +90,27 @@ def _parse_env_file(path: Path) -> dict[str, str]:
     return out
 
 
+_PROJECT_MARKERS = (".git", "pyproject.toml")
+
+
 def find_env_file(start: Path | None = None) -> Path | None:
-    """Look for a ``.env`` in ``start`` (default: the working directory) and its parents."""
+    """Look for a ``.env`` in ``start`` (default: the working directory) and its parents, up to the project root.
+
+    The search stops at the first directory that contains ``.git`` or ``pyproject.toml`` (the project root), and
+    never goes above the user's home directory. A ``.env`` in an unrelated ancestor directory can therefore not
+    supply keys or settings (evaluation finding F8).
+    """
     here = (start or Path.cwd()).resolve()
+    try:
+        home: Path | None = Path.home().resolve()
+    except RuntimeError:  # pragma: no cover - no home directory
+        home = None
     for d in (here, *here.parents):
         candidate = d / ".env"
         if candidate.is_file():
             return candidate
+        if any((d / m).exists() for m in _PROJECT_MARKERS) or d == home:
+            return None
     return None
 
 

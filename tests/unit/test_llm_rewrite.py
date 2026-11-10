@@ -222,3 +222,21 @@ def test_not_offered_without_config_and_never_for_general_prompts(tmp_path: Path
 )
 def test_parse_verdict(reply: str, ok: bool) -> None:
     assert (parse_verdict(reply) == []) is ok
+
+
+def test_a_paid_auxiliary_model_needs_a_positive_reservation(tmp_path: Path) -> None:
+    """Regression (evaluation F1)."""
+    cfg = HarnessConfig(
+        persistence=PersistenceConfig(path=tmp_path / "h.db"),
+        rewriter=RewriterConfig("mock", "rw", "mock", "judge", max_cost_per_call_usd=0.0),
+    )
+    with pytest.raises(ConfigurationError):
+        AdaptiveHarness(
+            provider="mock", model="t", config=cfg, aux_adapters={"rewriter": PaidMock(), "judge": PaidMock()}
+        )
+
+
+def test_the_same_model_through_another_provider_is_not_an_independent_judge() -> None:
+    """Regression (evaluation F14)."""
+    with pytest.raises(ConfigurationError):
+        RewriterConfig("groq", "openai/gpt-oss-20b", "openrouter", "gpt-oss-20b")

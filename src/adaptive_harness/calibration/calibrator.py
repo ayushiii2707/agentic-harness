@@ -20,6 +20,7 @@ import random
 import time
 import uuid
 from collections import defaultdict
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING
 
@@ -112,11 +113,19 @@ class Calibrator:
         seed: int = 0,
         max_tokens: int | None = None,
         pause_s: float = 0.0,
+        should_stop: Callable[[], bool] | None = None,
     ) -> None:
         if harness.store is None or harness.ledger is None or harness.evidence is None:
             raise ConfigurationError("calibration needs persistence enabled (an evidence store)")
         if max_calls < 1 or max_cost_per_call_usd < 0:
             raise ConfigurationError("max_calls must be >= 1 and max_cost_per_call_usd >= 0")
+        if max_cost_per_call_usd <= 0 and not harness.adapter.capabilities().local:
+            # A $0 reservation always fits the budget, and a provider that reports no cost would then be booked
+            # at $0 per call: the cap would never stop real spending (evaluation finding F1).
+            raise ConfigurationError(
+                "calibrating a non-local provider needs max_cost_per_call_usd > 0 (an upper bound per call, "
+                "reserved in the budget before each call); free tiers too, as bookkeeping"
+            )
         self.h = harness
         self.max_calls = max_calls
         self.max_cost = max_cost_per_call_usd
@@ -126,6 +135,7 @@ class Calibrator:
         self.seed = seed
         self.max_tokens = max_tokens
         self.pause_s = pause_s
+        self.should_stop = should_stop  # checked before every call, e.g. when the harness is closing
         self.calls = 0
         self.spend = 0.0
         self.notes: list[str] = []
@@ -220,7 +230,7 @@ class Calibrator:
         assert self.h.store is not None
         rows = self.h.store.query(
             "SELECT t.strategy_id, t.strategy_version, COUNT(*) AS n, SUM(e.score) AS s FROM trial t "
-            "JOIN evaluation e ON e.trial_id = t.id AND e.status IN ('success','failure','partial') "
+            "JOIN evaluation e ON e.trial_id = t.id AND e.counted = 1 "
             "WHERE t.experiment_id=? AND t.category_id=? GROUP BY t.strategy_id, t.strategy_version",
             (exp, category),
         )
@@ -262,6 +272,8 @@ class Calibrator:
     def _one_call(self, exp: str, task: CalibrationTask, arm: Strategy) -> str | None:
         """Run one call under the budget. Returns a stop reason, or None to continue."""
         assert self.h.ledger is not None
+        if self.should_stop is not None and self.should_stop():
+            return "cancelled; resume later with the same experiment id"
         if self.calls >= self.max_calls:
             return f"max_calls ({self.max_calls}) reached"
         try:

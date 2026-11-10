@@ -4,7 +4,8 @@
     python scripts/calibrate.py groq openai/gpt-oss-20b --suites math --max-calls 40 --resume <experiment id>
 
 Paid providers: pass --max-cost-per-call (USD, reserved before each call) and set ADAPTIVE_HARNESS_BUDGET_USD.
-Free tiers and local models: --max-cost-per-call 0 (the default).
+Local models: --max-cost-per-call 0 (the default). Any hosted provider, free tiers included, needs a positive
+--max-cost-per-call and a budget (ADAPTIVE_HARNESS_BUDGET_USD); a free tier then only uses bookkeeping budget.
 --llm-classifier PROVIDER:MODEL labels prompts the lexicon classifier calls `general` (use the same setting when
 serving, so evidence is looked up under the same labels).
 """

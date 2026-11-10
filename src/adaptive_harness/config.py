@@ -81,9 +81,13 @@ class HTTPConfig:
 
 @dataclass(frozen=True)
 class PolicyConfig:
-    """Strategy choice (DESIGN §6.4). Defaults: never switch without strong evidence; never explore."""
+    """Strategy choice (DESIGN §6.4). Never switch without strong evidence; explore only on checked calls, and
+    only while the comparison still lacks data."""
 
-    exploration_rate: float = 0.0  # share of *checked* calls that try a uniformly random candidate strategy
+    exploration_rate: float = (
+        0.1  # share of *checked* calls that try a uniformly random candidate strategy...
+    )
+    exploration_target: int = 60  # ...while some candidate in the cell has fewer (decayed) outcomes than this
     min_gain: float = 0.02  # a strategy must beat identity by at least this success-rate margin...
     confidence: float = 0.90  # ...with this posterior probability (Bonferroni-corrected)
     min_trials: int = 30  # evaluated outcomes needed for both identity and the challenger before comparing
@@ -96,6 +100,8 @@ class PolicyConfig:
     prior_evidence: bool = True  # load the shipped LeBlanc v4 prior records (weak; matching model IDs only)
 
     def __post_init__(self) -> None:
+        if self.exploration_target < 1:
+            raise ConfigurationError("exploration_target must be >= 1")
         if self.cost_weight < 0 or self.alias_half_life_days <= 0:
             raise ConfigurationError("cost_weight must be >= 0 and alias_half_life_days > 0")
         if self.half_life_days is not None and self.half_life_days <= 0:
@@ -110,13 +116,14 @@ class PolicyConfig:
 
 @dataclass(frozen=True)
 class CalibrationConfig:
-    """Automatic calibration (DESIGN §6.5). Off by default.
+    """Automatic calibration (DESIGN §6.5).
 
-    When on, a cold or stale profile is calibrated on a background thread. A local provider needs nothing else. A
-    paid provider also needs ``max_cost_per_call_usd > 0`` and harness budget; every call is reserved first.
+    A cold or stale profile is calibrated on a background thread. ``auto=None`` (the default) means: on for real
+    local providers (free), off for hosted ones. ``True`` also allows a hosted provider, which additionally needs
+    ``max_cost_per_call_usd > 0`` and harness budget; every call is reserved first. ``False`` turns it off.
     """
 
-    auto: bool = False
+    auto: bool | None = None
     max_calls: int = 60  # per automatic run
     max_cost_per_call_usd: float = 0.0
     max_tokens: int | None = 600
@@ -158,7 +165,10 @@ class RewriterConfig:
     max_tokens: int = 2000  # reasoning models spend part of this before answering
 
     def __post_init__(self) -> None:
-        if (self.rewriter_provider, self.rewriter_model) == (self.judge_provider, self.judge_model):
+        def norm(m: str) -> str:  # the same model through another provider is not independent (finding F14)
+            return m.rsplit("/", 1)[-1].strip().lower()
+
+        if norm(self.rewriter_model) == norm(self.judge_model):
             raise ConfigurationError("the judge must be a different model from the rewriter")
         if self.max_cost_per_call_usd < 0 or self.max_tokens < 1:
             raise ConfigurationError("max_cost_per_call_usd must be >= 0 and max_tokens >= 1")

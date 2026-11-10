@@ -25,6 +25,7 @@ import re
 from collections.abc import Sequence
 from typing import Any, ClassVar
 
+from .._lru import BoundedCache
 from ..auxiliary import AuxModel
 from ..hashing import canonical_hash
 from ..strategies.base import ALL, Strategy, StrategyInfo, TransformResult, last_user_text, replace_last_user
@@ -93,6 +94,11 @@ def _listed(data: Any) -> list[str]:
     return out
 
 
+def _same_model(a: str, b: str) -> bool:
+    """``openai/gpt-oss-20b`` on one provider and ``gpt-oss-20b`` on another are the same model (finding F14)."""
+    return a.rsplit("/", 1)[-1].strip().lower() == b.rsplit("/", 1)[-1].strip().lower()
+
+
 class LlmRewrite(Strategy):
     """Rewrite with an auxiliary model; verified by exact checks and an independent judge.
 
@@ -114,11 +120,11 @@ class LlmRewrite(Strategy):
     max_chars: ClassVar[int] = 4000
 
     def __init__(self, rewriter: AuxModel, judge: AuxModel) -> None:
-        if rewriter.key == judge.key:
+        if _same_model(rewriter.key[1], judge.key[1]):
             raise ValueError("the judge must be a different model from the rewriter")
         self.rewriter, self.judge = rewriter, judge
-        self._rewrites: dict[str, str] = {}
-        self._verdicts: dict[str, list[str]] = {}
+        self._rewrites: BoundedCache[str, str] = BoundedCache()
+        self._verdicts: BoundedCache[str, list[str]] = BoundedCache()
 
     def applicable(self, spec: TaskSpec) -> bool:
         return 0 < len(spec.text.strip()) <= self.max_chars and super().applicable(spec)
