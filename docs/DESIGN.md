@@ -145,6 +145,14 @@ step would add cost, non-determinism and an injection surface.
   the second category < 0.15, the category is `general`.** In that case only general-safe strategies are allowed.
   The thresholds are tuned on a labelled development set in Phase 5 and **frozen before Phase 12**.
   An optional LLM classifier plug-in is off by default.
+
+  *As implemented (Phase 11):*
+  - A numeric word-problem rule scores for `math`: a how-many/how-much/how-long/how-far/how-old/how-fast
+    question in a prompt with at least two numbers.
+  - `ClassifierConfig` enables `LlmFallbackClassifier`. It is asked only when the lexicon classifier returns
+    `general`, and must reply with one known category id as JSON. Anything else keeps `general`.
+  - Its calls are budgeted (`auxiliary.AuxModel`), cached per prompt and run at temperature 0. Use the same
+    setting for calibration and serving, so evidence keys match (D29).
 - **Requirement extraction (deterministic):**
   - sentence- and clause-level spans with deontic markers (`must`, `should`, `only`, `do not`, `never`,
     `without`, `at least`, `exactly`),
@@ -350,6 +358,34 @@ output plus accidental harm. Escaping to the host is what the container boundary
 If Docker is unavailable, execution evaluators return `evaluation_error`. Nothing ever falls back to running on
 the host.
 
+### 5.8 Orchestration (`orchestrator.py`, `api.py`), as implemented in Phase 11
+
+- The request path (analyse → choose → transform → call → record → evaluate → learn) stays in `AdaptiveHarness`.
+  `Orchestrator` holds only the work that must not block it.
+- **Safe outcome path.** Recording and evaluation catch every exception and log it. A broken store, check or
+  drift test never loses the model's answer.
+- **Background evaluation.** `generate(..., check=fn, background=True)` returns at once with
+  `evaluation_status="pending"`. The check and the evidence update run on one worker thread, in order.
+  `flush()` waits for them.
+- **Streaming.** `stream(..., check=fn)` records the trial and runs the check on the full text, after the final
+  event. Exploration happens only when a check is given, as for `generate`.
+- **Async.** `achat`/`agenerate` run planning, which may call a rewriter, judge or classifier, and the check in a
+  worker thread.
+- **Tools.** `extra=` passes provider-native options (e.g. `tools`, `tool_choice`, `response_format`) unchanged.
+  Responses expose `tool_calls` (`ToolCall(name, arguments_json, id)`), normalised for OpenAI-compatible,
+  Anthropic and Gemini. Sending tool *results* back stays provider-specific; it is not abstracted.
+- **Automatic calibration** (`CalibrationConfig.auto`, off by default):
+  - A `cold` or `stale` profile is calibrated on a background thread.
+  - A local provider needs nothing else.
+  - A paid provider also needs `max_cost_per_call_usd > 0` and harness budget, and every call is reserved first.
+  - At most one run at a time, and at most one start per `min_interval_s`.
+- **Privacy.** Evaluation details (which can quote the response) follow `prompt_storage`. With `"none"`, only the
+  diagnosis before the first colon is stored.
+- **Overhead (O5), measured** (`scripts/bench_overhead.py`, mock model, evidence for every arm):
+  - 0.8 ms p50 per call and 1.6 ms with a check; profile lookup 0.03 ms.
+  - Before Phase 11 the policy's Monte-Carlo comparison made this 20 ms. The exact integral, a cache and a
+    normal-approximation screen (which can only keep identity) removed that.
+
 ## 6. Algorithms
 
 ### 6.1 Unit of evidence and clustering
@@ -407,8 +443,9 @@ The penalty is never negative: a cheaper strategy still has to beat identity by 
    - Only strategies with at least `min_trials` (default 30) evaluated outcomes are compared, and only once
      identity also has `min_trials`.
    - Use the challenger *s\** with the highest P(θ(*s\**) > θ(identity) + δ) **only if** that probability is
-     ≥ 1 − (1 − 0.90)/k, where k is the number of challengers (Bonferroni). Estimated by Monte-Carlo from the
-     posteriors; δ is the minimum worthwhile gain (default 0.02).
+     ≥ 1 − (1 − 0.90)/k, where k is the number of challengers (Bonferroni). Computed by numerical integration of
+     the Beta posteriors (`learning/stats.py`; Monte-Carlo before Phase 11); δ is the minimum worthwhile gain
+     (default 0.02).
    - Otherwise send `identity`.
    - The cost term of §6.3 raises the margin for strategies that use more tokens (Phase 10).
 3. **Exploration** (opt-in, `PolicyConfig.exploration_rate`):
@@ -472,7 +509,7 @@ before the cap, not after.
 
 **As implemented (2026-11-10, `calibration/`):**
 - Calibration is explicit (`Calibrator(harness, max_calls=..., max_cost_per_call_usd=...).run(...)` or
-  `scripts/calibrate.py`); nothing calibrates automatically yet.
+  `scripts/calibrate.py`). Since Phase 11 it can also run automatically (`CalibrationConfig.auto`, below).
 - Every calibration call goes through `AdaptiveHarness.run_trial`, which is the normal request path with the
   strategy fixed. So calibration and online use share task analysis, the transform guard, trial records,
   evaluation and evidence updates.

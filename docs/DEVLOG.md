@@ -17,8 +17,9 @@
 - **Phase 8, transformation engine and preservation check:** done; pushed.
 - **LLM rewriter with an independent judge:** done.
 - **Phase 10, evidence decay, backoff, priors, drift and the cost term:** done.
-- **Review of Phases 1–10:** done (`docs/reports/review_phases_1_10.md`). **Awaiting approval for Phase 11.**
-- Not implemented yet: automatic (unattended) calibration; Phases 11–13.
+- **Review of Phases 1–10:** done (`docs/reports/review_phases_1_10.md`).
+- **Phase 11, orchestration, plus the known-limits pass:** done. **Awaiting approval for Phase 12.**
+- Not implemented yet: Phases 12–13.
 
 ## 2026-11-09 to 2026-11-10: Phase 0
 - Audited LeBlanc v4 at commit `51522f2` (read-only clone; database queried read-only; recomputation on a copy).
@@ -419,3 +420,41 @@ simulated): no strategy better: 0/40 false switches (2/40 before Phase 10); role
 ## 2026-11-10: Review of Phases 1–10
 See `docs/reports/review_phases_1_10.md`. One real defect was found and fixed (D40: prompt fragments in stored
 trace notes). Everything else was verified as described there.
+
+## 2026-11-10: Phase 11 (orchestration) and the known-limits pass
+**Built:**
+- **`orchestrator.py`.** Background evaluation (`background=True`, `flush()`) and opt-in automatic calibration of
+  cold or stale profiles (`CalibrationConfig`).
+- **`api.py`.**
+  - The outcome path catches every failure, so it can never lose a response.
+  - `stream(check=...)`.
+  - Async planning and checks run off the event loop.
+  - `extra=` passes provider options through, and `HarnessResponse.tool_calls` returns the model's tool calls.
+  - Evaluation details follow `prompt_storage`.
+- **Providers.** Tool calls are normalised for OpenAI-compatible, Anthropic and Gemini responses (`ToolCall`).
+- **`learning/stats.py`.** The exact Beta comparison, which replaces Monte-Carlo in the policy (D43).
+- **`tasks/`.** The numeric word-problem rule (D41) and `LlmFallbackClassifier` (D42). `auxiliary.AuxModel` is the
+  shared budgeted auxiliary call.
+- **Calibration.** The `instructions` suite: 60 + 60 generated tasks, checked exactly by `BulletConstraints`.
+- **Scripts.** `bench_overhead.py`, `eval_llm_classifier.py`, `e2e_ollama.py`, and `calibrate.py --llm-classifier`.
+
+**Known limits, before → after:**
+| Limit (review of Phases 1–10) | Now | Evidence |
+|---|---|---|
+| 59/100 held-out math prompts labelled `general` | 0/100 | `scripts/loop_audit.py`: 100/100 `math`, decisions match calibration 200/200 |
+| Classifier on the independent test split | lexicon 0.688 (unchanged); with the opt-in LLM fallback 0.766, coverage 0.812 → 0.953 | `scripts/eval_llm_classifier.py groq openai/gpt-oss-20b`; dev 0.938 → 0.927 (some true-`general` prompts get a category) |
+| A stale profile waits for a manual calibration | opt-in automatic calibration, free for local models, budget-gated for paid ones | `test_orchestration.py`; Ollama end-to-end run |
+| Sandbox output stored whatever `prompt_storage` is | follows `prompt_storage` | `test_evaluation_details_follow_prompt_storage` |
+| Rewriter calls block `agenerate` | run in a worker thread | `test_async_planning_and_checks_run_off_the_event_loop` |
+| Suites at ceiling, no per-model difference shown | see "Instruction suite, live" below | — |
+
+**Phase 11 acceptance (DESIGN §14):**
+- *`generate()` runs the full path:* yes (`test_system_loop.py`).
+- *Evaluation failure never loses a response:* yes (`test_an_evaluation_failure_never_loses_the_response`).
+- *O5:* 0.8 ms p50 per call, 1.6 ms with a check, profile lookup 0.03 ms (target < 5 ms / < 1 ms). It was
+  20 ms before D43.
+- *End to end on mock and Ollama:* yes. `scripts/e2e_ollama.py qwen2.5-coder:7b` streamed with a check, ran a
+  background check, and completed an automatic calibration of 3 calls; the profile became active.
+
+**Policy simulation with the exact comparison:** 0/40 false switches; the truly better strategy was found in
+40/40 runs (39/40 with Monte-Carlo). Run time went from 154 s to 48 s.

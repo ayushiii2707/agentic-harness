@@ -141,3 +141,21 @@ approval; "Decided" entries were made by the owner or follow from their instruct
   about 1% false alarms over 500 outcomes, and a 0.8→0.4 drop detected in 93% of runs.
 - **D40.** Diagnostic notes are stored with quoted spans removed when `prompt_storage="none"`. *Reason:* the review
   found that rejection reasons had stored prompt fragments.
+
+## 2026-11-10 (Phase 11 and the known-limits pass)
+
+- **D41.** A numeric word-problem rule (a how-many/how-much question in a prompt with at least two numbers) scores
+  for `math`. *Reason:* it is a general rule, not entries copied from test prompts (D21 still holds: no lexicon
+  entry matches only test prompts). The suite coverage gain does not count as evidence that the classifier
+  generalises; dev and test accuracy are reported separately.
+- **D42.** The LLM classifier is a fallback for `general` only. It never overrides a confident lexicon label, and
+  any failure keeps `general`. *Reason:* the safe default stays in charge, and the extra cost applies only where
+  the lexicon gives up.
+- **D43.** The policy computes P(beats identity) by numerical integration instead of Monte-Carlo. *Reason:* the
+  result is deterministic and exact to within 0.006 of 100k-sample Monte-Carlo, and it is about 20× faster (O5).
+  A normal approximation may only *skip* clearly losing challengers, never select one.
+- **D44.** Automatic calibration is opt-in. It never spends on a paid provider without an explicit per-call cap
+  and budget. *Reason:* principle "no paid calls by default"; local models are free, so they need no cap.
+- **D45.** Tool definitions pass through unchanged (`extra=`); only the model's tool *calls* are normalised.
+  *Reason:* a cross-provider tool-conversation abstraction is a large surface that no current requirement needs.
+- **D46.** Evaluation details follow `prompt_storage`, like trace notes (D40).

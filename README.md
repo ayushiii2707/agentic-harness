@@ -10,9 +10,13 @@ says a change helps.
 > - outcomes you report update that evidence, and the next choice uses it;
 > - evidence decays, borrows weakly from related cells, and drift marks a profile stale.
 >
-> Also built: budgeted calibration, a Docker sandbox for code checks, and an opt-in LLM rewriter with an
-> independent judge. Not built yet: automatic (unattended) calibration, orchestration and the research
-> experiments (Phases 11–13). See [docs/DESIGN.md](docs/DESIGN.md) and [docs/DEVLOG.md](docs/DEVLOG.md).
+> Also built:
+> - budgeted calibration, which can also run automatically;
+> - a Docker sandbox for code checks;
+> - background checks, streaming checks and tool pass-through;
+> - opt-in LLM helpers (a rewriter with an independent judge, and a classifier).
+>
+> Not built yet: the research experiments and the release work (Phases 12–13). See [docs/DESIGN.md](docs/DESIGN.md) and [docs/DEVLOG.md](docs/DEVLOG.md).
 
 ## Install (development)
 
@@ -53,6 +57,25 @@ h.profile()["evidence"]           # per category and strategy: outcomes seen so 
 A strategy replaces your original prompt only after both have at least 30 evaluated outcomes and the evidence
 says it is better by a margin, with high posterior probability (DESIGN §6.4). Evidence is kept per model version,
 in a local SQLite file.
+
+### More
+
+```python
+r = h.generate(prompt, check=slow_check, background=True)   # returns now; the check runs on a worker thread
+h.flush()                                                     # wait for background checks
+
+for event in h.stream(prompt, check=my_check):                # streaming; the check runs on the full text
+    print(event.delta, end="")
+
+r = h.generate("Weather in Oslo?", extra={"tools": [...]})    # provider-native options pass through unchanged
+r.tool_calls                                                  # normalised: name, arguments (JSON), id
+```
+
+Opt-in features (all off by default):
+- `CalibrationConfig(auto=True)` calibrates a new or stale profile in the background. It is free for local
+  models; a paid provider needs a per-call cap and a budget.
+- `ClassifierConfig(provider, model)` lets an LLM label prompts that the built-in classifier calls `general`.
+- `RewriterConfig(...)` enables the LLM rewriter. An independent judge must confirm every rewrite.
 
 API keys are read from environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`,
 `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY`) or from a local `.env` file. Keys are never logged or

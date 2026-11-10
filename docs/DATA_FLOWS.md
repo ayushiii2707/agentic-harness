@@ -8,6 +8,8 @@
 | Model metadata requests | The same provider (`/models`, `models.get`, `/api/show`) | Only when `model_info()` is called |
 | Calibration prompts (our own suites) | The same provider | Only when you run `Calibrator(...).run()` |
 | Your prompt, sent to a rewriter model and then (with the rewrite) to a judge model | The providers you name in `RewriterConfig` | Only if you set `HarnessConfig.rewriter`, and only when `llm_rewrite` is tried for that prompt |
+| Your prompt, sent to a classifier model | The provider you name in `ClassifierConfig` | Only if you set `HarnessConfig.llm_classifier`, and only for prompts the built-in classifier labels `general` |
+| Calibration prompts, automatically | The provider you configured | Only if you set `CalibrationConfig(auto=True)`; for a paid provider also a per-call cap and a budget |
 
 There is **no telemetry**. The harness never contacts any other service. With a local provider (Ollama, vLLM,
 LM Studio) nothing leaves your machine.
