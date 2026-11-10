@@ -20,7 +20,8 @@ from .budget import BudgetLedger
 from .config import HarnessConfig
 from .errors import StoreError
 from .hashing import text_hash
-from .providers.base import ProviderAdapter
+from .models import ModelKey, ModelRegistry, deployment_for
+from .providers.base import ModelInfo, ProviderAdapter
 from .providers.registry import create_adapter
 from .redaction import redact_text
 from .store import Store
@@ -86,14 +87,24 @@ class AdaptiveHarness:
             if provider.lower() != "mock":
                 opts.update(api_key=api_key, base_url=base_url, http=self.config.http)
             self.adapter = create_adapter(provider, **opts)
+        transport = getattr(self.adapter, "transport", None)
+        self.model_key = ModelKey(
+            provider=self.adapter.name,
+            model_id=model,
+            deployment=deployment_for(
+                getattr(transport, "base_url", None), self.adapter.capabilities().local
+            ),
+        )
         self.store: Store | None = None
         self.ledger: BudgetLedger | None = None
+        self.models: ModelRegistry | None = None
         if self.config.persistence.enabled:
             try:
                 self.store = Store(self.config.persistence.resolved_path())
                 self.ledger = BudgetLedger(
                     self.store, total_usd=self.config.budget.total_usd, daily_usd=self.config.budget.daily_usd
                 )
+                self.models = ModelRegistry(self.store)
             except StoreError as e:  # never block the user's call because the store is unavailable
                 log.warning("evidence store unavailable, running stateless: %s", e)
                 self.store = None
@@ -148,6 +159,29 @@ class AdaptiveHarness:
             if event.result is not None:
                 self._record(trial_id, request, event.result, trace)
             yield event
+
+    def profile(self) -> dict[str, Any] | None:
+        """What the harness currently holds about the connected model (None before the first call)."""
+        if self.models is None:
+            return None
+        ref = self.models.latest_model_ref(self.model_key)
+        return self.models.profile(ref) if ref is not None else None
+
+    def model_info(self) -> ModelInfo:
+        """Ask the provider for model metadata (an explicit request) and record the facts with provenance.
+
+        Facts are stored once the model has answered at least one call, because the model row is keyed by the
+        version the provider reports in its responses.
+        """
+        info = self.adapter.model_info(self.model)
+        if self.models is not None:
+            ref = self.models.latest_model_ref(self.model_key)
+            if ref is not None:
+                try:
+                    self.models.record_facts(ref, info)
+                except StoreError as e:
+                    log.warning("could not record model facts: %s", e)
+        return info
 
     def close(self) -> None:
         self.adapter.close()
@@ -204,14 +238,25 @@ class AdaptiveHarness:
             stored_response = redact_text(result.text) if storage == "redacted" else result.text
         u = result.usage if result else None
         try:
+            model_ref = None
+            if result is not None and self.models is not None:
+                obs = self.models.observe(self.model_key, result)
+                model_ref = obs.model_ref
+                if obs.changed:
+                    log.warning(
+                        "model %s changed (now %s); its earlier profile is marked stale",
+                        self.model,
+                        obs.resolved_version,
+                    )
             self.store.execute(
-                """INSERT INTO trial(id, provider, model_requested, model_reported, strategy_id, strategy_version,
+                """INSERT INTO trial(id, model_ref, provider, model_requested, model_reported, strategy_id, strategy_version,
                      settings_json, prompt_hash, original_prompt, transformed_prompt, response_text, finish_reason,
                      input_tokens, output_tokens, reasoning_tokens, cost_usd, cost_is_estimated, latency_s, retries,
                      fingerprint_json, dropped_settings, error, status, simulated, trace_json, created_at, finished_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     trial_id,
+                    model_ref,
                     self.adapter.name,
                     request.model,
                     result.model_reported if result else None,
