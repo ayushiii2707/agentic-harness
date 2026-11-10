@@ -130,11 +130,21 @@ class Calibrator:
         self.spend = 0.0
         self.notes: list[str] = []
 
+    def _renew_stale_profile(self) -> None:
+        """Recalibrating a stale profile starts the next profile version, so stale evidence is not reused."""
+        assert self.h.models is not None
+        ref = self.h.models.latest_model_ref(self.h.model_key)
+        profile = self.h.models.profile(ref) if ref is not None else None
+        if ref is not None and profile is not None and profile["status"] == "stale":
+            new_id = self.h.models.next_profile(ref)
+            self.notes.append(f"profile {profile['id']} was stale; recalibrating into new profile {new_id}")
+
     # ------------------------------------------------------------------ public
     def run(
         self, categories: tuple[str, ...] = SUITE_CATEGORIES, experiment_id: str | None = None
     ) -> CalibrationReport:
         exp = experiment_id or f"cal-{uuid.uuid4().hex[:10]}"
+        self._renew_stale_profile()
         self._ensure_experiment(exp, categories)
         cells: list[CellReport] = []
         stop_reason: str | None = None

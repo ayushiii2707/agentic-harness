@@ -4,7 +4,7 @@ Rules (DESIGN §5.1, §6.7):
 - a new resolved version of the same (provider, model id, deployment) is a new model row with its own profile;
   the previous version's profiles become ``stale`` and a ``fingerprint`` change event is recorded;
 - a changed fingerprint on the same version (e.g. a different serving host) marks that row's profiles stale;
-- a stale profile is kept, never deleted; recalibration (a later phase) creates the next profile version;
+- a stale profile is kept, never deleted; recalibration creates the next profile version (``next_profile``);
 - no network call is made here; metadata facts come from responses or from an explicit ``model_info()`` call.
 """
 
@@ -116,6 +116,21 @@ class ModelRegistry:
             "SELECT kind, detail_json, at FROM change_event WHERE profile_id=? ORDER BY at", (row["id"],)
         )
         return dict(row, facts=self.facts(model_ref), change_events=events)
+
+    def next_profile(self, model_ref: int) -> int:
+        """Start the next profile version for a model (recalibration of a stale profile). Returns its id.
+
+        The new profile starts with no evidence; the stale one is kept for audit.
+        """
+        with self.store.transaction() as con:
+            row = con.execute(
+                "SELECT COALESCE(MAX(profile_version), 0) FROM profile WHERE model_ref=?", (model_ref,)
+            ).fetchone()
+            cur = con.execute(
+                "INSERT INTO profile(model_ref, profile_version, status, created_at) VALUES (?,?,?,?)",
+                (model_ref, int(row[0]) + 1, "calibrating", time.time()),
+            )
+            return int(cur.lastrowid or 0)
 
     # ------------------------------------------------------------------ internals
     @staticmethod

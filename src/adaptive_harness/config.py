@@ -88,8 +88,21 @@ class PolicyConfig:
     confidence: float = 0.90  # ...with this posterior probability (Bonferroni-corrected)
     min_trials: int = 30  # evaluated outcomes needed for both identity and the challenger before comparing
     mc_samples: int = 2000
+    cost_weight: float = 0.1  # lambda of DESIGN §6.3: success-rate points given up per 100% extra tokens
+    half_life_days: float | None = 90.0  # evidence decay for pinned model versions (None = no decay)
+    alias_half_life_days: float = 21.0  # ...and for moving aliases such as *-latest
+    drift_window: int = 30  # recent outcomes compared with the ones before them
+    drift_reference: int = 120
+    drift_z: float = 4.0  # tuned in scripts/simulate_drift.py: ~1% false alarms over 500 outcomes
+    prior_evidence: bool = True  # load the shipped LeBlanc v4 prior records (weak; matching model IDs only)
 
     def __post_init__(self) -> None:
+        if self.cost_weight < 0 or self.alias_half_life_days <= 0:
+            raise ConfigurationError("cost_weight must be >= 0 and alias_half_life_days > 0")
+        if self.half_life_days is not None and self.half_life_days <= 0:
+            raise ConfigurationError("half_life_days must be > 0 or None")
+        if self.drift_window < 5 or self.drift_reference < self.drift_window or self.drift_z <= 0:
+            raise ConfigurationError("drift_window >= 5, drift_reference >= drift_window and drift_z > 0")
         if not 0.0 <= self.exploration_rate <= 1.0 or not 0.5 <= self.confidence < 1.0:
             raise ConfigurationError("exploration_rate must be in [0, 1] and confidence in [0.5, 1)")
         if self.min_gain < 0 or self.mc_samples < 100 or self.min_trials < 1:

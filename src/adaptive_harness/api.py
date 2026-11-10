@@ -28,6 +28,8 @@ from .errors import StoreError
 from .evaluation import Check, EvalStatus, EvaluationResult, feedback_result, run_check
 from .hashing import text_hash
 from .learning import Decision, EvidenceStore, Policy
+from .learning.drift import check_drift, mark_drift
+from .learning.priors import load_priors
 from .models import ModelKey, ModelRegistry, deployment_for
 from .providers.base import ModelInfo, ProviderAdapter
 from .providers.registry import create_adapter
@@ -136,7 +138,13 @@ class AdaptiveHarness:
                     self.store, total_usd=self.config.budget.total_usd, daily_usd=self.config.budget.daily_usd
                 )
                 self.models = ModelRegistry(self.store)
-                self.evidence = EvidenceStore(self.store)
+                pc = self.config.policy
+                days = pc.alias_half_life_days if self.model_key.alias else pc.half_life_days
+                self.evidence = EvidenceStore(
+                    self.store, half_life_s=None if days is None else days * 86400.0
+                )
+                if pc.prior_evidence:
+                    load_priors(self.store)
                 for key in self.strategies.sync_with_store(self.store):
                     log.warning(
                         "strategy %s changed its wording without a new version; it is disabled because its stored "
@@ -379,7 +387,17 @@ class AdaptiveHarness:
                 decision = Decision(forced, "calibration: strategy fixed by the experiment")
             else:
                 profile_id, status = self._current_profile()
-                arms = self.evidence.arms(profile_id, spec.category) if (self.evidence and profile_id) else {}
+                arms = (
+                    self.evidence.arms(
+                        profile_id,
+                        spec.category,
+                        parent=self._parent(spec.category),
+                        model_id=self.model,
+                        host=self.adapter.name,
+                    )
+                    if (self.evidence and profile_id)
+                    else {}
+                )
                 decision = self.policy.choose(
                     candidates,
                     arms,
@@ -472,9 +490,40 @@ class AdaptiveHarness:
             outcome = evaluation.outcome
             # One outcome per trial updates the evidence; later evaluations of the same trial are kept as records.
             if outcome is not None and not already_counted and self.evidence and profile_id and category:
-                self.evidence.record(profile_id, category, strategy_id, strategy_version, outcome)
+                row = self.store.query_one(
+                    "SELECT input_tokens, output_tokens FROM trial WHERE id=?", (trial_id,)
+                )
+                tokens = None
+                if row is not None and (row["input_tokens"] is not None or row["output_tokens"] is not None):
+                    tokens = (row["input_tokens"] or 0) + (row["output_tokens"] or 0)
+                self.evidence.record(
+                    profile_id, category, strategy_id, strategy_version, outcome, tokens=tokens
+                )
+                self._check_drift(profile_id, category, strategy_id, strategy_version)
         except StoreError as e:
             log.warning("could not record evaluation: %s", e)
+
+    def _parent(self, category: str) -> str | None:
+        c = self.analyzer.classifier.taxonomy.categories.get(category)
+        return c.parent if c is not None else None
+
+    def _check_drift(self, profile_id: int, category: str, strategy_id: str, version: str) -> None:
+        assert self.evidence is not None and self.store is not None
+        pc = self.config.policy
+        outcomes = self.evidence.outcomes(
+            profile_id, category, strategy_id, version, pc.drift_window + pc.drift_reference
+        )
+        r = check_drift(outcomes, window=pc.drift_window, reference=pc.drift_reference, z_crit=pc.drift_z)
+        if r.drifted:
+            detail = {
+                "category": category,
+                "strategy": f"{strategy_id}@{version}",
+                "z": round(r.z or 0.0, 3),
+                "recent_mean": r.recent_mean,
+                "reference_mean": r.reference_mean,
+            }
+            if mark_drift(self.store, profile_id, detail):
+                log.warning("outcome drift detected for %s (%s); profile marked stale", self.model, detail)
 
     def _record(
         self, trial_id: str, plan: _Plan, result: CompletionResult | None, error: Exception | None = None

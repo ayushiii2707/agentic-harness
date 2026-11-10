@@ -7,6 +7,10 @@ where k is the number of challengers (a Bonferroni correction, so that several s
 streak do not add up to a false switch). The probability is estimated by Monte-Carlo sampling from the Beta
 posteriors. With no evidence the rule never holds, so a fresh model always gets the original prompt.
 
+``min_trials`` is checked on each cell's own decayed outcome count (``ArmStats.n_eff``); borrowed priors never
+count towards it. A strategy that uses more tokens than identity must also beat it by the cost penalty
+lambda * (tokens_s / tokens_identity - 1) (DESIGN §6.3; never negative).
+
 Explore (opt-in, ``exploration_rate`` > 0): only on calls whose outcome will be observed (a check was supplied).
 With probability ``exploration_rate`` the strategy is drawn **uniformly** from the candidates, identity included.
 Uniform randomisation keeps the comparison a fair experiment and keeps the identity baseline well sampled; the
@@ -41,10 +45,24 @@ class Policy:
     def _arm(self, s: Strategy, arms: dict[tuple[str, str], ArmStats]) -> ArmStats:
         return arms.get((s.info.id, s.info.version), ArmStats(s.info.id, s.info.version))
 
+    def _enough(self, arm: ArmStats) -> bool:
+        # decayed counts lose a little to the clock even between back-to-back calls; 0.01 absorbs that
+        return arm.n_eff >= self.config.min_trials - 0.01
+
+    def cost_penalty(self, a: ArmStats, b: ArmStats) -> float:
+        """Extra success rate ``a`` must show over ``b`` to pay for its extra tokens (DESIGN §6.3).
+
+        lambda * (tokens_a / tokens_b - 1), using identity's tokens as cost_ref. Never negative: a cheaper strategy
+        still has to beat identity by ``min_gain`` (do no harm).
+        """
+        if a.mean_tokens is None or not b.mean_tokens:
+            return 0.0
+        return max(0.0, self.config.cost_weight * (a.mean_tokens / b.mean_tokens - 1.0))
+
     def p_better(self, a: ArmStats, b: ArmStats) -> float:
-        """P(theta_a > theta_b + min_gain) under independent Beta posteriors."""
+        """P(theta_a > theta_b + min_gain + cost penalty) under independent Beta posteriors."""
         n = self.config.mc_samples
-        g = self.config.min_gain
+        g = self.config.min_gain + self.cost_penalty(a, b)
         beat = sum(
             self.rng.betavariate(a.alpha, a.beta) > self.rng.betavariate(b.alpha, b.beta) + g
             for _ in range(n)
@@ -74,16 +92,16 @@ class Policy:
             return Decision(identity, "identity: no other strategy applies to this task")
 
         base = self._arm(identity, arms)
-        if base.n_trials < self.config.min_trials:
+        if not self._enough(base):
             return Decision(
                 identity,
-                f"identity: baseline has {base.n_trials} < {self.config.min_trials} evaluated outcomes",
+                f"identity: baseline has {base.n_eff:.1f} < {self.config.min_trials} (decayed) evaluated outcomes",
             )
         required = 1.0 - (1.0 - self.config.confidence) / len(others)
         best_p, best = 0.0, None
         for s in others:
             arm = self._arm(s, arms)
-            if arm.n_trials < self.config.min_trials:
+            if not self._enough(arm):
                 continue
             p = self.p_better(arm, base)
             if p > best_p:
@@ -91,7 +109,8 @@ class Policy:
         if best is not None and best_p >= required:
             return Decision(
                 best,
-                f"evidence: P(beats identity by >= {self.config.min_gain:.2f}) = {best_p:.3f} "
+                f"evidence: P(beats identity by >= {self.config.min_gain + self.cost_penalty(self._arm(best, arms), base):.3f}"
+                f" incl. cost) = {best_p:.3f} "
                 f"(required {required:.3f})",
                 p_better=best_p,
             )
