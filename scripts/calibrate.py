@@ -5,6 +5,8 @@
 
 Paid providers: pass --max-cost-per-call (USD, reserved before each call) and set ADAPTIVE_HARNESS_BUDGET_USD.
 Free tiers and local models: --max-cost-per-call 0 (the default).
+--llm-classifier PROVIDER:MODEL labels prompts the lexicon classifier calls `general` (use the same setting when
+serving, so evidence is looked up under the same labels).
 """
 
 from __future__ import annotations
@@ -16,7 +18,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
-from adaptive_harness import AdaptiveHarness, HarnessConfig, PersistenceConfig  # noqa: E402
+from adaptive_harness import AdaptiveHarness, ClassifierConfig, HarnessConfig, PersistenceConfig  # noqa: E402
 from adaptive_harness.calibration import Calibrator  # noqa: E402
 
 
@@ -31,8 +33,15 @@ def main() -> int:
     ap.add_argument("--pause", type=float, default=0.0)
     ap.add_argument("--db", default=str(ROOT / ".harness" / "calibration.db"))
     ap.add_argument("--resume")
+    ap.add_argument("--llm-classifier", help="PROVIDER:MODEL for the opt-in LLM fallback classifier")
     a = ap.parse_args()
-    cfg = HarnessConfig.from_env(HarnessConfig(persistence=PersistenceConfig(path=Path(a.db))))
+    clf = None
+    if a.llm_classifier:
+        provider, _, model = a.llm_classifier.partition(":")
+        clf = ClassifierConfig(provider, model)
+    cfg = HarnessConfig.from_env(
+        HarnessConfig(persistence=PersistenceConfig(path=Path(a.db)), llm_classifier=clf)
+    )
     h = AdaptiveHarness(provider=a.provider, model=a.model, config=cfg)
     cal = Calibrator(
         h,
