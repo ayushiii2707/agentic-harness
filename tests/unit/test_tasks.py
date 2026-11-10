@@ -101,3 +101,27 @@ def test_harness_labels_but_never_changes_the_prompt(tmp_path: Path) -> None:
     assert r.trace.category is not None and r.trace.confidence is not None
     row = h.store.query_one("SELECT category_id FROM trial")  # type: ignore[union-attr]
     assert row is not None and row["category_id"] == r.trace.category
+
+
+def test_analysis_time_stays_bounded_for_long_prompts() -> None:
+    """Regression (evaluation F7): classification time grew linearly with prompt size (about 80 ms at 10 KB)."""
+    import time
+
+    from adaptive_harness.tasks import TaskAnalyzer, TaskClassifier
+    from adaptive_harness.tasks.classifier import classification_view
+
+    chunk = "Refactor this function so it handles empty input and returns ids sorted by date.\ndef f(x): return x\n"
+    long = "Write a Python function that parses ISO dates. " + chunk * 2000 + " Return JSON only."
+    view = classification_view(long)
+    assert (
+        len(view) <= 8001
+        and view.startswith("Write a Python function")
+        and view.endswith("Return JSON only.")
+    )
+    assert TaskClassifier().classify(long).category == TaskClassifier().classify(view).category
+    a = TaskAnalyzer()
+    a.analyze(long)  # warm up
+    t = time.perf_counter()
+    a.analyze(long)
+    assert time.perf_counter() - t < 0.5  # ~200 KB: generous bound for slow CI machines (was ~2 s)
+    assert "json" in a.analyze(long).requirements.output_formats  # requirements still read the whole prompt

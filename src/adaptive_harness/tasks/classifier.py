@@ -83,6 +83,18 @@ class Taxonomy:
         return bool((ca and ca.parent == b) or (cb and cb.parent == a))
 
 
+HEAD_CHARS, TAIL_CHARS = 6000, 2000
+
+
+def classification_view(prompt: str) -> str:
+    """The part of a prompt the classifier reads: all of it up to 8,000 characters, otherwise the first 6,000 and
+    the last 2,000. A request states its task at the start or the end; the middle of a long prompt is usually pasted
+    code or data. This bounds classification time (finding F7). Requirement extraction still reads everything."""
+    if len(prompt) <= HEAD_CHARS + TAIL_CHARS:
+        return prompt
+    return prompt[:HEAD_CHARS] + "\n" + prompt[-TAIL_CHARS:]
+
+
 class TaskClassifier:
     def __init__(self, taxonomy: Taxonomy | None = None) -> None:
         self.taxonomy = taxonomy or Taxonomy.load_default()
@@ -95,7 +107,9 @@ class TaskClassifier:
             s = 0.0
             hits: list[str] = []
             for rx, label, w in c.phrases:
-                if rx.search(low):
+                # The regex can only match where the phrase occurs, so a C substring test skips almost every
+                # absent phrase cheaply; the result is identical (finding F7).
+                if label.lower() in low and rx.search(low):
                     s += w
                     hits.append(label)
             for rx, label, w in c.patterns:
@@ -109,7 +123,7 @@ class TaskClassifier:
 
     def classify(self, prompt: str) -> Classification:
         t = self.taxonomy
-        scores, evidence = self.scores(prompt)
+        scores, evidence = self.scores(classification_view(prompt))
         total = sum(scores.values()) + t.unexplained_mass
         dist = {cid: s / total for cid, s in scores.items()}
         dist[GENERAL] = t.unexplained_mass / total

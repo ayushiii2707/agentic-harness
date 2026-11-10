@@ -18,10 +18,11 @@ import re
 import time
 
 from .._logging import get_logger
+from .._lru import BoundedCache
 from ..auxiliary import AuxModel
 from ..errors import StoreError
 from ..store import Store
-from .classifier import GENERAL, Classification, TaskClassifier
+from .classifier import GENERAL, Classification, TaskClassifier, classification_view
 
 log = get_logger("tasks")
 _JSON = re.compile(r"\{.*?\}", re.S)
@@ -35,7 +36,7 @@ class LlmFallbackClassifier(TaskClassifier):
         self.model = model
         self.store = store
         self.name = f"{model.adapter.name}/{model.model}"
-        self._cache: dict[str, str | None] = {}
+        self._cache: BoundedCache[str, str | None] = BoundedCache()
         self._answered = False
         cats = "\n".join(f"- {c.id}: {c.description}" for c in self.taxonomy.categories.values())
         self.system = (
@@ -96,7 +97,8 @@ class LlmFallbackClassifier(TaskClassifier):
     def _ask(self, prompt: str) -> str | None:
         self._answered = False
         try:
-            reply = self.model.complete(self.system, f"<request>\n{prompt}\n</request>", "llm_classifier")
+            view = classification_view(prompt)  # the same bounded view as the lexicon classifier (F7)
+            reply = self.model.complete(self.system, f"<request>\n{view}\n</request>", "llm_classifier")
         except Exception as e:
             log.warning("LLM classifier unavailable, keeping 'general': %s", type(e).__name__)
             return None  # not stored: a refusal or outage should be retried later, not remembered
