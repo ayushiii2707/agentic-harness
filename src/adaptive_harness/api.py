@@ -12,6 +12,7 @@ Without either, calls are recorded but never counted as successes or failures.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import random
 import time
@@ -22,24 +23,27 @@ from typing import Any
 
 from ._logging import get_logger
 from ._version import __version__
+from .auxiliary import AuxModel
 from .budget import BudgetLedger
 from .config import HarnessConfig, RewriterConfig
-from .errors import StoreError
+from .errors import ProviderError, StoreError
 from .evaluation import Check, EvalStatus, EvaluationResult, feedback_result, run_check
 from .hashing import text_hash
 from .learning import Decision, EvidenceStore, Policy
 from .learning.drift import check_drift, mark_drift
 from .learning.priors import load_priors
 from .models import ModelKey, ModelRegistry, deployment_for
+from .orchestrator import Orchestrator
 from .providers.base import ModelInfo, ProviderAdapter
 from .providers.registry import create_adapter
 from .redaction import redact_text, scrub_quoted
 from .store import Store
 from .strategies import Strategy, StrategyRegistry
 from .tasks import TaskAnalyzer, TaskSpec
+from .tasks.llm_classifier import LlmFallbackClassifier
 from .transform import apply_strategy
-from .transform.llm_rewrite import AuxModel, build_llm_rewrite
-from .types import CompletionRequest, CompletionResult, GenerationSettings, Message, StreamEvent
+from .transform.llm_rewrite import build_llm_rewrite
+from .types import CompletionRequest, CompletionResult, GenerationSettings, Message, StreamEvent, ToolCall
 
 log = get_logger(__name__)
 
@@ -76,6 +80,11 @@ class HarnessResponse:
     @property
     def cost_usd(self) -> float | None:
         return self.result.cost_usd
+
+    @property
+    def tool_calls(self) -> tuple[ToolCall, ...]:
+        """Tool calls the model asked for (pass ``tools`` to the provider via ``extra=``)."""
+        return self.result.tool_calls
 
 
 @dataclass(frozen=True)
@@ -124,6 +133,7 @@ class AdaptiveHarness:
                 getattr(transport, "base_url", None), self.adapter.capabilities().local
             ),
         )
+        self.orchestrator = Orchestrator(self)
         self.analyzer = TaskAnalyzer()
         self.strategies = strategies or StrategyRegistry()
         self.policy = Policy(self.config.policy, random.Random(policy_seed))
@@ -156,6 +166,22 @@ class AdaptiveHarness:
                 self.store = self.models = self.evidence = self.ledger = None
         if self.config.rewriter is not None:
             self._add_llm_rewrite(self.config.rewriter, aux_adapters or {})
+        if self.config.llm_classifier is not None:
+            lc = self.config.llm_classifier
+            adapter = (aux_adapters or {}).get("classifier") or create_adapter(
+                lc.provider, **({} if lc.provider.lower() == "mock" else {"http": self.config.http})
+            )
+            self.analyzer = TaskAnalyzer(
+                LlmFallbackClassifier(
+                    AuxModel(
+                        adapter,
+                        lc.model,
+                        self.ledger,
+                        max_cost_per_call_usd=lc.max_cost_per_call_usd,
+                        max_tokens=lc.max_tokens,
+                    )
+                )
+            )
 
     def _add_llm_rewrite(self, rc: RewriterConfig, adapters: Mapping[str, ProviderAdapter]) -> None:
         """Register ``llm_rewrite``. ``adapters`` may supply the "rewriter"/"judge" adapters (tests, custom)."""
@@ -182,38 +208,71 @@ class AdaptiveHarness:
 
     # ------------------------------------------------------------------ public API
     def generate(
-        self, prompt: str, *, system: str | None = None, check: Check | None = None, **settings: Any
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        check: Check | None = None,
+        background: bool = False,
+        extra: Mapping[str, Any] | None = None,
+        **settings: Any,
     ) -> HarnessResponse:
-        return self.chat(self._messages(prompt, system), check=check, **settings)
+        """Send ``prompt``. ``check`` scores the answer (the only way the harness learns); with
+        ``background=True`` the check runs on a worker thread and the response returns at once. ``extra`` is passed
+        to the provider unchanged (e.g. ``tools``, ``tool_choice``, ``response_format``)."""
+        return self.chat(
+            self._messages(prompt, system), check=check, background=background, extra=extra, **settings
+        )
 
     def chat(
-        self, messages: Sequence[Message | Mapping[str, Any]], *, check: Check | None = None, **settings: Any
+        self,
+        messages: Sequence[Message | Mapping[str, Any]],
+        *,
+        check: Check | None = None,
+        background: bool = False,
+        extra: Mapping[str, Any] | None = None,
+        **settings: Any,
     ) -> HarnessResponse:
-        plan = self._plan(messages, settings, can_explore=check is not None)
+        plan = self._plan(messages, settings, can_explore=check is not None, extra=extra)
         trial_id = uuid.uuid4().hex
         try:
             result = self.adapter.complete(plan.sent)
         except Exception as e:
             self._record(trial_id, plan, None, error=e)
             raise
-        return self._finish(trial_id, plan, result, check)
+        return self._finish(trial_id, plan, result, check, background=background)
 
     async def agenerate(
-        self, prompt: str, *, system: str | None = None, check: Check | None = None, **settings: Any
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        check: Check | None = None,
+        extra: Mapping[str, Any] | None = None,
+        **settings: Any,
     ) -> HarnessResponse:
-        return await self.achat(self._messages(prompt, system), check=check, **settings)
+        return await self.achat(self._messages(prompt, system), check=check, extra=extra, **settings)
 
     async def achat(
-        self, messages: Sequence[Message | Mapping[str, Any]], *, check: Check | None = None, **settings: Any
+        self,
+        messages: Sequence[Message | Mapping[str, Any]],
+        *,
+        check: Check | None = None,
+        extra: Mapping[str, Any] | None = None,
+        **settings: Any,
     ) -> HarnessResponse:
-        plan = self._plan(messages, settings, can_explore=check is not None)
+        """Async chat. Planning (which may call a rewriter and judge) and the check run in a worker thread, so they
+        never block the event loop."""
+        plan = await asyncio.to_thread(
+            self._plan, messages, settings, can_explore=check is not None, extra=extra
+        )
         trial_id = uuid.uuid4().hex
         try:
             result = await self.adapter.acomplete(plan.sent)
         except Exception as e:
-            self._record(trial_id, plan, None, error=e)
+            await asyncio.to_thread(self._record, trial_id, plan, None, e)
             raise
-        return self._finish(trial_id, plan, result, check)
+        return await asyncio.to_thread(self._finish, trial_id, plan, result, check)
 
     def run_trial(
         self,
@@ -242,14 +301,34 @@ class AdaptiveHarness:
             raise
         return self._finish(trial_id, plan, result, check)
 
-    def stream(self, prompt: str, *, system: str | None = None, **settings: Any) -> Iterator[StreamEvent]:
-        """Streaming uses the same strategy choice; there is no check, so it never explores."""
-        plan = self._plan(self._messages(prompt, system), settings, can_explore=False)
+    def stream(
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        check: Check | None = None,
+        background: bool = False,
+        extra: Mapping[str, Any] | None = None,
+        **settings: Any,
+    ) -> Iterator[StreamEvent]:
+        """Stream the answer. The trial is recorded, and ``check`` (if given) run on the full text, after the final
+        event. Exploration happens only when a check is given, as for ``generate``."""
+        plan = self._plan(
+            self._messages(prompt, system), settings, can_explore=check is not None, extra=extra
+        )
         trial_id = uuid.uuid4().hex
-        for event in self.adapter.stream(plan.sent):
-            if event.result is not None:
-                self._record(trial_id, plan, event.result)
-            yield event
+        try:
+            for event in self.adapter.stream(plan.sent):
+                if event.result is not None:
+                    self._finish(trial_id, plan, event.result, check, background=background)
+                yield event
+        except ProviderError as e:
+            self._record(trial_id, plan, None, error=e)
+            raise
+
+    def flush(self, timeout: float | None = None) -> bool:
+        """Wait for background evaluations (and an automatic recalibration, if one is running). True if all done."""
+        return self.orchestrator.flush(timeout)
 
     def feedback(self, response_id: str, *, success: bool | None = None, score: float | None = None) -> str:
         """Report the real outcome of an earlier response. Returns the stored evaluation status."""
@@ -312,6 +391,7 @@ class AdaptiveHarness:
         return info
 
     def close(self) -> None:
+        self.orchestrator.close()
         self.adapter.close()
         if self.store is not None:
             self.store.close()
@@ -343,6 +423,7 @@ class AdaptiveHarness:
         *,
         can_explore: bool,
         forced: Strategy | None = None,
+        extra: Mapping[str, Any] | None = None,
     ) -> _Plan:
         """Build the request to send. ``forced`` is used by calibration only: the strategy is fixed by the
         experiment instead of chosen by the policy. Everything else is identical to a normal call."""
@@ -357,7 +438,7 @@ class AdaptiveHarness:
             stop=tuple(settings.get("stop") or ()),
             seed=settings.get("seed"),
         )
-        original = CompletionRequest.build(self.model, messages, gen)
+        original = CompletionRequest.build(self.model, messages, gen, extra)
         identity = self.strategies.get("identity")
 
         def passthrough(reason: str, spec: TaskSpec | None = None, notes: tuple[str, ...] = ()) -> _Plan:
@@ -441,22 +522,62 @@ class AdaptiveHarness:
 
     # ------------------------------------------------------------------ outcome
     def _finish(
-        self, trial_id: str, plan: _Plan, result: CompletionResult, check: Check | None
+        self,
+        trial_id: str,
+        plan: _Plan,
+        result: CompletionResult,
+        check: Check | None,
+        *,
+        background: bool = False,
     ) -> HarnessResponse:
-        profile_id = self._record(trial_id, plan, result)
+        """Record the trial and evaluate it. Nothing here can lose the response: any failure is logged."""
         trace = plan.trace
+        try:
+            profile_id = self._record(trial_id, plan, result)
+        except Exception as e:
+            log.warning("could not record the trial: %s: %s", type(e).__name__, e)
+            profile_id = None
+        if self.config.calibration.auto and plan.experiment_id is None:
+            try:
+                self.orchestrator.maybe_recalibrate(self._current_profile()[1])
+            except Exception as e:
+                log.warning("automatic calibration check failed: %s", e)
         if check is not None:
-            evaluation = run_check(check, result.text)
+            if background:
+                self.orchestrator.submit(lambda: self._evaluate(trial_id, plan, result, check, profile_id))
+                trace = replace(trace, evaluation_status="pending")
+            else:
+                trace = replace(
+                    trace, evaluation_status=self._evaluate(trial_id, plan, result, check, profile_id)
+                )
+        return HarnessResponse(id=trial_id, text=result.text, result=result, trace=trace)
+
+    def _evaluate(
+        self, trial_id: str, plan: _Plan, result: CompletionResult, check: Check, profile_id: int | None
+    ) -> str:
+        evaluation = run_check(check, result.text)  # never raises: a crashing check is an evaluation_error
+        try:
             self._store_evaluation(
                 trial_id,
                 evaluation,
                 profile_id,
-                trace.category,
-                trace.strategy_id,
-                trace.strategy_version,
+                plan.trace.category,
+                plan.trace.strategy_id,
+                plan.trace.strategy_version,
             )
-            trace = replace(trace, evaluation_status=evaluation.status.value)
-        return HarnessResponse(id=trial_id, text=result.text, result=result, trace=trace)
+        except Exception as e:
+            log.warning("could not store the evaluation: %s: %s", type(e).__name__, e)
+        return evaluation.status.value
+
+    def _keep_details(self, details: str) -> str:
+        """Evaluator details can contain parts of the response (e.g. sandbox test output). With
+        ``prompt_storage="none"`` only the diagnosis before the first colon is kept, with quoted spans removed."""
+        storage = self.config.persistence.prompt_storage
+        if storage == "full":
+            return details
+        if storage == "redacted":
+            return redact_text(details)
+        return scrub_quoted(details.split(":", 1)[0].split("|", 1)[0])[:80].strip()
 
     def _store_evaluation(
         self,
@@ -483,7 +604,7 @@ class AdaptiveHarness:
                     evaluation.evaluator_version,
                     evaluation.status.value,
                     evaluation.outcome,
-                    json.dumps({"details": evaluation.details}),
+                    json.dumps({"details": self._keep_details(evaluation.details)}),
                     time.time(),
                 ),
             )

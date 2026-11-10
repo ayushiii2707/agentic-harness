@@ -2,7 +2,16 @@
 
 from ._version import __version__
 from .api import AdaptiveHarness, HarnessResponse, Trace
-from .config import BudgetConfig, HarnessConfig, HTTPConfig, PersistenceConfig, PolicyConfig, RewriterConfig
+from .config import (
+    BudgetConfig,
+    CalibrationConfig,
+    ClassifierConfig,
+    HarnessConfig,
+    HTTPConfig,
+    PersistenceConfig,
+    PolicyConfig,
+    RewriterConfig,
+)
 from .errors import (
     AuthenticationError,
     BudgetExceededError,
@@ -18,13 +27,23 @@ from .errors import (
     RateLimitError,
     StoreError,
 )
-from .types import CompletionRequest, CompletionResult, FinishReason, GenerationSettings, Message, Usage
+from .types import (
+    CompletionRequest,
+    CompletionResult,
+    FinishReason,
+    GenerationSettings,
+    Message,
+    ToolCall,
+    Usage,
+)
 
 __all__ = [
     "AdaptiveHarness",
     "AuthenticationError",
     "BudgetConfig",
     "BudgetExceededError",
+    "CalibrationConfig",
+    "ClassifierConfig",
     "CompletionRequest",
     "CompletionResult",
     "ConfigurationError",
@@ -47,6 +66,7 @@ __all__ = [
     "RateLimitError",
     "RewriterConfig",
     "StoreError",
+    "ToolCall",
     "Trace",
     "Usage",
     "__version__",

@@ -87,7 +87,6 @@ class PolicyConfig:
     min_gain: float = 0.02  # a strategy must beat identity by at least this success-rate margin...
     confidence: float = 0.90  # ...with this posterior probability (Bonferroni-corrected)
     min_trials: int = 30  # evaluated outcomes needed for both identity and the challenger before comparing
-    mc_samples: int = 2000
     cost_weight: float = 0.1  # lambda of DESIGN §6.3: success-rate points given up per 100% extra tokens
     half_life_days: float | None = 90.0  # evidence decay for pinned model versions (None = no decay)
     alias_half_life_days: float = 21.0  # ...and for moving aliases such as *-latest
@@ -105,8 +104,43 @@ class PolicyConfig:
             raise ConfigurationError("drift_window >= 5, drift_reference >= drift_window and drift_z > 0")
         if not 0.0 <= self.exploration_rate <= 1.0 or not 0.5 <= self.confidence < 1.0:
             raise ConfigurationError("exploration_rate must be in [0, 1] and confidence in [0.5, 1)")
-        if self.min_gain < 0 or self.mc_samples < 100 or self.min_trials < 1:
-            raise ConfigurationError("min_gain must be >= 0, mc_samples >= 100 and min_trials >= 1")
+        if self.min_gain < 0 or self.min_trials < 1:
+            raise ConfigurationError("min_gain must be >= 0 and min_trials >= 1")
+
+
+@dataclass(frozen=True)
+class CalibrationConfig:
+    """Automatic calibration (DESIGN §6.5). Off by default.
+
+    When on, a cold or stale profile is calibrated on a background thread. A local provider needs nothing else. A
+    paid provider also needs ``max_cost_per_call_usd > 0`` and harness budget; every call is reserved first.
+    """
+
+    auto: bool = False
+    max_calls: int = 60  # per automatic run
+    max_cost_per_call_usd: float = 0.0
+    max_tokens: int | None = 600
+    categories: tuple[str, ...] = ("math", "structured_output")  # code_generation needs Docker
+    min_interval_s: float = 3600.0  # at most one automatic start per interval
+
+    def __post_init__(self) -> None:
+        if self.max_calls < 1 or self.max_cost_per_call_usd < 0 or self.min_interval_s < 0:
+            raise ConfigurationError("max_calls >= 1, max_cost_per_call_usd >= 0 and min_interval_s >= 0")
+        object.__setattr__(self, "categories", tuple(self.categories))
+
+
+@dataclass(frozen=True)
+class ClassifierConfig:
+    """Opt-in LLM fallback for prompts the deterministic classifier labels ``general``."""
+
+    provider: str
+    model: str
+    max_cost_per_call_usd: float = 0.001
+    max_tokens: int = 1000  # reasoning models spend part of this before answering
+
+    def __post_init__(self) -> None:
+        if self.max_cost_per_call_usd < 0 or self.max_tokens < 1:
+            raise ConfigurationError("max_cost_per_call_usd must be >= 0 and max_tokens >= 1")
 
 
 @dataclass(frozen=True)
@@ -138,6 +172,8 @@ class HarnessConfig:
     http: HTTPConfig = field(default_factory=HTTPConfig)
     policy: PolicyConfig = field(default_factory=PolicyConfig)
     rewriter: RewriterConfig | None = None  # None = no LLM rewriting
+    calibration: CalibrationConfig = field(default_factory=CalibrationConfig)
+    llm_classifier: ClassifierConfig | None = None  # None = deterministic classifier only
     log_content: bool = False  # log prompt and response text at DEBUG level
 
     # ------------------------------------------------------------------ loading
@@ -175,6 +211,8 @@ class HarnessConfig:
             "http": HTTPConfig,
             "policy": PolicyConfig,
             "rewriter": RewriterConfig,
+            "calibration": CalibrationConfig,
+            "llm_classifier": ClassifierConfig,
         }
         kwargs: dict[str, Any] = {}
         known = {f.name for f in fields(cls)}
