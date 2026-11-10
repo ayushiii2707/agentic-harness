@@ -107,10 +107,27 @@ class GeminiAdapter(ProviderAdapter):
             if m.role == "system":
                 continue
             role = "model" if m.role == "assistant" else "user"
+            parts: list[dict[str, Any]] = [{"text": m.content}] if m.content and m.role != "tool" else []
+            for c in m.tool_calls:
+                try:
+                    args = json.loads(c.arguments or "{}")
+                except json.JSONDecodeError:
+                    args = {"_raw": c.arguments}
+                parts.append({"functionCall": {"name": c.name, "args": args}})
+            if m.role == "tool":  # a tool result goes back as a functionResponse part (finding F11)
+                try:
+                    response = json.loads(m.content)
+                except json.JSONDecodeError:
+                    response = {"result": m.content}
+                if not isinstance(response, dict):
+                    response = {"result": response}
+                parts.append({"functionResponse": {"name": m.name or m.tool_call_id, "response": response}})
+            if not parts:
+                parts = [{"text": ""}]
             if contents and contents[-1]["role"] == role:
-                contents[-1]["parts"].append({"text": m.content})
+                contents[-1]["parts"].extend(parts)
             else:
-                contents.append({"role": role, "parts": [{"text": m.content}]})
+                contents.append({"role": role, "parts": parts})
         body: dict[str, Any] = {"contents": contents}
         if system:
             body["systemInstruction"] = {"parts": [{"text": "\n\n".join(system)}]}

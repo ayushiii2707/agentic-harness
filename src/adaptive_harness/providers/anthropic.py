@@ -45,17 +45,49 @@ def _usage(u: Mapping[str, Any] | None) -> Usage:
     )
 
 
+def _blocks(m: Message) -> list[dict[str, Any]]:
+    """Content blocks for one message. Tool calls become ``tool_use`` blocks; tool results ``tool_result``."""
+    if m.role == "tool":
+        return [{"type": "tool_result", "tool_use_id": m.tool_call_id, "content": m.content}]
+    blocks: list[dict[str, Any]] = [{"type": "text", "text": m.content}] if m.content else []
+    for c in m.tool_calls:
+        try:
+            args = json.loads(c.arguments or "{}")
+        except json.JSONDecodeError:
+            args = {"_raw": c.arguments}
+        blocks.append({"type": "tool_use", "id": c.id, "name": c.name, "input": args})
+    return blocks
+
+
 def _messages(messages: tuple[Message, ...]) -> tuple[str | None, list[dict[str, Any]]]:
-    """Move system messages to the top-level field and merge consecutive same-role turns."""
+    """Move system messages to the top-level field and merge consecutive same-role turns.
+
+    Tool results are sent in a ``user`` turn, as the Messages API requires.
+    """
     system = [m.content for m in messages if m.role == "system"]
     turns: list[dict[str, Any]] = []
     for m in messages:
         if m.role == "system":
             continue
-        if turns and turns[-1]["role"] == m.role:
-            turns[-1]["content"] += "\n\n" + m.content
+        role = "user" if m.role == "tool" else m.role
+        if (
+            not m.tool_calls
+            and m.role != "tool"
+            and not any(t for t in turns[-1:] if isinstance(t["content"], list))
+        ):
+            if turns and turns[-1]["role"] == role:
+                turns[-1]["content"] += "\n\n" + m.content
+            else:
+                turns.append({"role": role, "content": m.content})
+            continue
+        blocks = _blocks(m)
+        if turns and turns[-1]["role"] == role:
+            prev = turns[-1]["content"]
+            turns[-1]["content"] = (
+                [{"type": "text", "text": prev}] if isinstance(prev, str) else prev
+            ) + blocks
         else:
-            turns.append({"role": m.role, "content": m.content})
+            turns.append({"role": role, "content": blocks})
     return ("\n\n".join(system) if system else None), turns
 
 

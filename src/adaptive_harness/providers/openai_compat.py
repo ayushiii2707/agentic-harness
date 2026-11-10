@@ -12,7 +12,7 @@ import httpx
 from .._keys import Secret, get_secret
 from ..config import HTTPConfig
 from ..errors import ConfigurationError, MalformedResponseError, ProviderError
-from ..types import CompletionRequest, CompletionResult, FinishReason, StreamEvent, ToolCall, Usage
+from ..types import CompletionRequest, CompletionResult, FinishReason, Message, StreamEvent, ToolCall, Usage
 from ._http import HTTPTransport, map_error
 from .base import MetadataFact, ModelInfo, ProviderAdapter, ProviderCapabilities
 from .presets import PRESETS, OpenAIPreset, custom_preset
@@ -44,6 +44,21 @@ def _usage(u: Mapping[str, Any] | None) -> Usage:
         reasoning_tokens=details.get("reasoning_tokens"),
         cached_input_tokens=prompt_details.get("cached_tokens"),
     )
+
+
+def _message(m: Message) -> dict[str, Any]:
+    out: dict[str, Any] = {"role": m.role, "content": m.content}
+    if m.tool_calls:
+        out["content"] = m.content or None
+        out["tool_calls"] = [
+            {"id": c.id, "type": "function", "function": {"name": c.name, "arguments": c.arguments}}
+            for c in m.tool_calls
+        ]
+    if m.role == "tool":
+        out["tool_call_id"] = m.tool_call_id
+        if m.name:
+            out["name"] = m.name
+    return out
 
 
 def _tool_calls(message: Mapping[str, Any]) -> tuple[ToolCall, ...]:
@@ -113,7 +128,7 @@ class OpenAICompatibleAdapter(ProviderAdapter):
         dropped: list[str] = []
         body: dict[str, Any] = {
             "model": request.model,
-            "messages": [{"role": m.role, "content": m.content} for m in request.messages],
+            "messages": [_message(m) for m in request.messages],
         }
         if s.max_tokens is not None:
             body[self.preset.max_tokens_field] = s.max_tokens
