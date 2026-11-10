@@ -35,26 +35,37 @@ PROMPT = "Reply with exactly the word: pong"
 MAX_TOKENS = 512  # reasoning models spend output tokens on hidden reasoning before the answer
 
 
+PER_CALL_CAP_USD = 0.01  # owner's limit for one paid smoke call
+
+
 @dataclass(frozen=True)
 class Target:
     provider: str
     model: str
     free: bool
-    max_cost_usd: float  # conservative upper bound for one call of this size
+    max_cost_usd: float  # reserved before the call; must be >= the worst case at MAX_TOKENS
+    usd_per_m_in: float = 0.0  # list prices, used only when the provider reports no cost
+    usd_per_m_out: float = 0.0
     note: str = ""
+
+    def estimate(self, input_tokens: int | None, output_tokens: int | None) -> float:
+        return ((input_tokens or 0) * self.usd_per_m_in + (output_tokens or 0) * self.usd_per_m_out) / 1e6
 
 
 TARGETS = [
-    Target("ollama", "qwen2.5-coder:7b", True, 0.0, "local"),
-    # The three free hosted targets are the same three models LeBlanc v4 studied (via OpenRouter there).
-    Target("groq", "openai/gpt-oss-20b", True, 0.0, "free tier"),
-    Target("gemini", "gemini-3.5-flash-lite", True, 0.0, "free tier"),
+    Target("ollama", "qwen2.5-coder:7b", True, 0.0, note="local"),
+    # The free hosted targets are two of the three models LeBlanc v4 studied (via OpenRouter there).
+    Target("groq", "openai/gpt-oss-20b", True, 0.0, note="free tier"),
+    Target("gemini", "gemini-3.5-flash-lite", True, 0.0, note="free tier"),
     # Ollama cloud answered HTTP 402 "add usage credits" on 2026-11-10: not free for this account.
-    Target("ollama_cloud", "deepseek-v4.1-flash:1017", False, 0.002, "needs credits"),
-    Target("openai", "gpt-4.1-nano", False, 0.002),
-    Target("anthropic", "claude-haiku-5-5", False, 0.002),
-    Target("openrouter", "openai/gpt-oss-20b", False, 0.002),
+    Target("ollama_cloud", "deepseek-v4.1-flash:1017", False, 0.005, note="needs credits"),
+    # Paid list prices (USD per million tokens): gpt-4o-mini 0.15/0.60; claude-haiku-5-5 0.10/0.50;
+    # openai/gpt-oss-20b on OpenRouter 0.03/0.13 (from its /models listing, 2026-11-10).
+    Target("openai", "gpt-4o-mini", False, 0.005, 0.15, 0.60),
+    Target("anthropic", "claude-haiku-5-5", False, 0.005, 0.10, 0.50),
+    Target("openrouter", "openai/gpt-oss-20b", False, 0.005, 0.03, 0.13),
 ]
+assert all(t.max_cost_usd <= PER_CALL_CAP_USD for t in TARGETS)
 
 
 def run_one(t: Target, ledger: BudgetLedger, allow_paid: bool) -> dict[str, object]:
@@ -72,9 +83,14 @@ def run_one(t: Target, ledger: BudgetLedger, allow_paid: bool) -> dict[str, obje
         )
         r = adapter.complete(req)
         info = adapter.model_info(t.model)
-        actual = r.cost_usd if r.cost_usd is not None else (t.max_cost_usd if not t.free else 0.0)
+        reported = r.cost_usd is not None
+        actual = r.cost_usd if reported else t.estimate(r.usage.input_tokens, r.usage.output_tokens)
         if reservation is not None:
-            ledger.commit(reservation, actual, note="smoke")
+            ledger.commit(
+                reservation, actual, note="smoke" + ("" if reported else " (estimated from list price)")
+            )
+        out["cost_charged_to_ledger_usd"] = round(actual or 0.0, 8)
+        out["cost_source"] = "provider" if reported else ("list price estimate" if not t.free else "free")
         out.update(
             status="ok",
             text=r.text.strip()[:60],
