@@ -1,0 +1,22 @@
+{
+  "experiment": "phase12-v1",
+  "preregistration": "experiments/preregistration_v1.md",
+  "suite_version": "2",
+  "models": [
+    {"provider": "groq", "model": "openai/gpt-oss-20b", "max_tokens": 2000, "pause_s": 1.0},
+    {"provider": "groq", "model": "qwen/qwen3.8-27b", "max_tokens": 1000, "pause_s": 2.0},
+    {"provider": "gemini", "model": "gemini-3.5-flash-lite", "max_tokens": 1000, "pause_s": 4.5}
+  ],
+  "calibration": {"math": 35, "structured_output": 35, "instructions": 35},
+  "heldout": {"math": 60, "structured_output": 60, "instructions": 60, "code_generation": 30},
+  "unseen_categories": ["code_generation"],
+  "calibration_arms": ["identity", "concise_directive", "role_framing", "stepwise_plan", "output_schema",
+                       "structured_sections", "requirements_checklist"],
+  "fixed_strategy_b": "structured_sections",
+  "repetitions": 2,
+  "order_seed": 7,
+  "bootstrap": {"resamples": 10000, "seed": 12},
+  "bh_q": 0.05,
+  "noninferiority_margin_pp": 5,
+  "bookkeeping": {"max_cost_per_call_usd": 0.001, "budget_usd": 20.0}
+}
