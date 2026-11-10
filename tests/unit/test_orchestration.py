@@ -193,3 +193,49 @@ def test_identity_only_cells_cost_nothing(tmp_path: Path) -> None:
     )
     report = Calibrator(h, max_calls=100, max_cost_per_call_usd=0.0).run(categories=("math",))
     assert report.calls == 0 and all(c.stopped == "nothing to compare" for c in report.cells)
+
+
+def test_auto_calibration_defaults_to_real_local_providers_only(tmp_path: Path) -> None:
+    """Regression (evaluation F3): automatic calibration is on by default where it is free."""
+
+    class LocalModel(MockProvider):
+        name = "ollama"
+
+    class Hosted(MockProvider):
+        name = "groq"
+
+        def capabilities(self) -> ProviderCapabilities:
+            return ProviderCapabilities(local=False)
+
+    assert make(tmp_path / "a", LocalModel(lambda r: "1")).orchestrator.allowed() == (True, "")
+    assert make(tmp_path / "b", Hosted(lambda r: "1")).orchestrator.allowed()[0] is False
+    assert make(tmp_path / "c").orchestrator.allowed()[0] is False  # the test mock never auto-calibrates
+    off = make(tmp_path / "d", LocalModel(lambda r: "1"), calibration=CalibrationConfig(auto=False))
+    assert off.orchestrator.allowed() == (False, "automatic calibration is off")
+
+
+def test_close_cancels_a_running_calibration_promptly(tmp_path: Path) -> None:
+    """Regression (evaluation F10): close() used to wait for the whole automatic calibration."""
+    slow = MockProvider(lambda r: (time.sleep(0.2), "1")[1])
+    h = make(tmp_path, slow, calibration=CalibrationConfig(auto=True, max_calls=50, categories=("math",)))
+    h.generate(PROMPT)  # starts the background calibration (50 calls x 0.2 s = 10 s)
+    time.sleep(0.5)
+    t = time.perf_counter()
+    h.close()
+    assert time.perf_counter() - t < 2.0
+    report = h.orchestrator.last_report
+    assert report is not None and report.calls < 50
+    assert any("cancelled" in c.stopped for c in report.cells)
+
+
+def test_an_abandoned_stream_is_recorded_but_never_counted(tmp_path: Path) -> None:
+    """Regression (evaluation F12): breaking out of a stream used to leave no record at all."""
+    h = make(tmp_path, MockProvider(lambda r: "hello world"))
+    for _ in h.stream(PROMPT, check=lambda t: True):
+        break
+    assert h.store is not None
+    rows = h.store.query("SELECT status, error FROM trial")
+    assert len(rows) == 1 and rows[0]["status"] == "failed" and "stream closed" in rows[0]["error"]
+    assert evidence_n(h) == 0
+    list(h.stream(PROMPT))  # a completed stream is recorded once, as before
+    assert len(h.store.query("SELECT id FROM trial")) == 2

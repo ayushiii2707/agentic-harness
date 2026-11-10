@@ -97,3 +97,23 @@ def test_unknown_provider() -> None:
         AdaptiveHarness(
             provider="nope", model="x", config=HarnessConfig(persistence=PersistenceConfig(enabled=False))
         )
+
+
+def test_empty_prompts_are_rejected_before_any_call(tmp_path: Path) -> None:
+    """Regression (evaluation F15)."""
+    import pytest as _pytest
+
+    from adaptive_harness import AdaptiveHarness, HarnessConfig, PersistenceConfig
+    from adaptive_harness.providers import MockProvider
+
+    model = MockProvider()
+    h = AdaptiveHarness(
+        provider="mock",
+        model="m",
+        adapter=model,
+        config=HarnessConfig(persistence=PersistenceConfig(path=tmp_path / "h.db")),
+    )
+    for p in ("", "   \n"):
+        with _pytest.raises(ValueError):
+            h.generate(p)
+    assert model.requests == []

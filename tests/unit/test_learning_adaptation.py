@@ -102,7 +102,10 @@ def test_priors_alone_never_switch_the_policy(tmp_path: Path) -> None:
         provider="mock",
         model="deepseek-v4.1-flash",
         adapter=model,
-        config=HarnessConfig(persistence=PersistenceConfig(path=tmp_path / "h.db")),
+        config=HarnessConfig(
+            persistence=PersistenceConfig(path=tmp_path / "h.db"),
+            policy=PolicyConfig(exploration_rate=0.0),  # this test checks the exploit rule only
+        ),
     )
     prompt = "Write a Flask login endpoint that stores passwords securely and prevents SQL injection."
     assert h.analyzer.analyze(prompt).category == "security_sensitive_code"
@@ -121,14 +124,17 @@ def test_drift_statistic_alarms_on_a_shift_and_not_on_noise() -> None:
     assert not check_drift([1.0] * 40, window=30, reference=120, z_crit=4.0).drifted  # too few outcomes
 
 
-def test_drift_marks_the_profile_stale_and_recalibration_starts_a_new_version(tmp_path: Path) -> None:
+def test_drift_marks_the_profile_stale_and_starts_a_new_version_at_once(tmp_path: Path) -> None:
     state = {"good": True}
     model = MockProvider(lambda r: "ok" if state["good"] else "bad")
     h = AdaptiveHarness(
         provider="mock",
         model="m",
         adapter=model,
-        config=HarnessConfig(persistence=PersistenceConfig(path=tmp_path / "h.db")),
+        config=HarnessConfig(
+            persistence=PersistenceConfig(path=tmp_path / "h.db"),
+            policy=PolicyConfig(exploration_rate=0.0),  # this test checks the exploit rule only
+        ),
     )
     prompt = "What is 17 times 23?"
     for _ in range(120):
@@ -138,20 +144,21 @@ def test_drift_marks_the_profile_stale_and_recalibration_starts_a_new_version(tm
     state["good"] = False
     for _ in range(30):
         h.generate(prompt, check=lambda t: t == "ok")
-    pid, status = h._current_profile()
-    assert (pid, status) == (first, "stale")
-    profile = h.profile()
-    assert profile is not None and [e["kind"] for e in profile["change_events"]] == ["drift"]
+    assert h.store is not None
+    old = h.store.query_one("SELECT status FROM profile WHERE id=?", (first,))
+    assert old is not None and old["status"] == "stale"
+    events = h.store.query("SELECT kind FROM change_event WHERE profile_id=?", (first,))
+    assert [e["kind"] for e in events] == ["drift"]
+    pid, status = h._current_profile()  # learning resumes on a fresh version, with no inherited evidence
+    assert pid != first and status == "cold"
+    row = h.store.query_one("SELECT profile_version FROM profile WHERE id=?", (pid,))
+    assert row is not None and row["profile_version"] == 2
     r = h.generate(prompt, check=lambda t: True)
-    assert r.trace.strategy_id == "identity" and "no current profile evidence" in r.trace.reason
+    assert r.trace.strategy_id == "identity"
 
     report = Calibrator(h, max_calls=2, max_cost_per_call_usd=0.0).run(categories=("math",))
     new_pid, new_status = h._current_profile()
-    assert new_pid != first and new_status == "active"
-    assert any("was stale" in n for n in report.notes)
-    assert h.store is not None
-    row = h.store.query_one("SELECT profile_version FROM profile WHERE id=?", (new_pid,))
-    assert row is not None and row["profile_version"] == 2
+    assert new_pid == pid and new_status == "active" and report.calls > 0
 
 
 # ------------------------------------------------------------------ cost term

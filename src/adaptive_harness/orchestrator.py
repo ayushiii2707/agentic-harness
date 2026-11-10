@@ -37,6 +37,7 @@ class Orchestrator:
         self._lock = threading.Lock()
         self._calibration: threading.Thread | None = None
         self._last_start = 0.0
+        self._cancel = threading.Event()
         self.last_report: CalibrationReport | None = None
         self.last_error: str | None = None
 
@@ -68,22 +69,29 @@ class Orchestrator:
                 return False
         return not not_done
 
-    def close(self) -> None:
-        self.flush()
+    def close(self, timeout: float | None = 30.0) -> bool:
+        """Stop: cancel a running calibration (it stops before its next call) and wait up to ``timeout`` seconds
+        for pending background evaluations. Returns True if everything finished (finding F10)."""
+        self._cancel.set()
+        done = self.flush(timeout)
         with self._lock:
             if self._pool is not None:
-                self._pool.shutdown(wait=True)
+                self._pool.shutdown(wait=done, cancel_futures=not done)
                 self._pool = None
+        return done
 
     # ------------------------------------------------------------------ automatic recalibration
     def allowed(self) -> tuple[bool, str]:
         """Whether automatic calibration may run for this harness, and why not."""
         cc = self.h.config.calibration
-        if not cc.auto:
+        local = self.h.adapter.capabilities().local
+        if cc.auto is False:
             return False, "automatic calibration is off"
+        if cc.auto is None and (not local or self.h.adapter.name == "mock"):
+            return False, "automatic calibration is on by default only for real local providers"
         if self.h.store is None or self.h.ledger is None:
             return False, "needs persistence"
-        if not self.h.adapter.capabilities().local:
+        if not local:
             if cc.max_cost_per_call_usd <= 0:
                 return False, "paid provider: set calibration.max_cost_per_call_usd > 0"
             if self.h.ledger.remaining_usd() < cc.max_cost_per_call_usd:
@@ -98,6 +106,8 @@ class Orchestrator:
         if not ok:
             return False
         with self._lock:
+            if self._cancel.is_set():
+                return False
             if self._calibration is not None and self._calibration.is_alive():
                 return False
             if (
@@ -123,6 +133,7 @@ class Orchestrator:
                 max_calls=cc.max_calls,
                 max_cost_per_call_usd=cc.max_cost_per_call_usd,
                 max_tokens=cc.max_tokens,
+                should_stop=self._cancel.is_set,
             ).run(categories=cc.categories)
             self.last_error = None
         except Exception as e:  # a failed calibration never affects the user's calls

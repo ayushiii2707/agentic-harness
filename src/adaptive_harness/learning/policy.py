@@ -11,8 +11,9 @@ posteriors (``learning/stats.py``). With no evidence the rule never holds, so a 
 count towards it. A strategy that uses more tokens than identity must also beat it by the cost penalty
 lambda * (tokens_s / tokens_identity - 1) (DESIGN §6.3; never negative).
 
-Explore (opt-in, ``exploration_rate`` > 0): only on calls whose outcome will be observed (a check was supplied).
-With probability ``exploration_rate`` the strategy is drawn **uniformly** from the candidates, identity included.
+Explore (default ``exploration_rate`` 0.1): only on calls whose outcome will be observed (a check was supplied), and
+only while some candidate in the cell has fewer than ``exploration_target`` (decayed) outcomes. With probability
+``exploration_rate`` the strategy is then drawn **uniformly** from the candidates, identity included.
 Uniform randomisation keeps the comparison a fair experiment and keeps the identity baseline well sampled; the
 first version used Thompson sampling, which starved identity and produced a 37% false-switch rate in simulation
 (see docs/DEVLOG.md, "decision loop").
@@ -92,7 +93,10 @@ class Policy:
         identity = candidates[0]
         others = list(candidates[1:])
 
-        if can_explore and others and self.rng.random() < self.config.exploration_rate:
+        undersampled = any(
+            self._arm(s, arms).n_eff < self.config.exploration_target for s in candidates
+        )  # exploration is justified only while the comparison lacks data (decay or drift can reopen it)
+        if can_explore and others and undersampled and self.rng.random() < self.config.exploration_rate:
             pick = self.rng.choice(list(candidates))
             return Decision(pick, "exploration: uniform random choice among candidates", explored=True)
 

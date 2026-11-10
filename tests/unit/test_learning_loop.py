@@ -210,3 +210,48 @@ def test_optimize_false_never_changes_the_prompt(tmp_path: Path) -> None:
         assert r.trace.strategy_id == "identity" and model.requests[-1].messages == (
             Message("user", CODE_PROMPT),
         )
+
+
+def test_the_default_config_learns_and_then_stops_exploring(tmp_path: Path) -> None:
+    """Regression (evaluation F3): with defaults the harness used to send identity forever, whatever the checks."""
+    import random as _random
+
+    from adaptive_harness import AdaptiveHarness, HarnessConfig, PersistenceConfig
+    from adaptive_harness.providers import MockProvider
+
+    role = "You are an experienced software engineer."
+    rng = _random.Random(4)
+    model = MockProvider(
+        lambda r: (
+            "ok"
+            if rng.random()
+            < (0.95 if any(role in m.content for m in r.messages if m.role == "system") else 0.3)
+            else "no"
+        )
+    )
+    h = AdaptiveHarness(
+        provider="mock", model="m", adapter=model,
+        config=HarnessConfig(persistence=PersistenceConfig(path=tmp_path / "h.db")), policy_seed=3,
+    )  # fmt: skip
+    prompt = "Write a Python function that checks whether a number is prime."
+    traces = [h.generate(prompt, check=lambda t: t == "ok").trace for _ in range(2500)]
+    assert h.generate(prompt).trace.strategy_id == "role_framing"  # learned with the default settings
+    assert 0 < sum(t.explored for t in traces) < 0.1 * len(traces)
+    assert not any(h.generate(prompt).trace.explored for _ in range(50))  # never without a check
+
+    spec = h.analyzer.analyze(prompt)
+    target = h.config.policy.exploration_target
+
+    def all_sampled() -> bool:
+        pid, _ = h._current_profile()
+        assert h.evidence is not None and pid is not None
+        arms = h.evidence.arms(pid, spec.category)
+        keys = [(c.info.id, c.info.version) for c in h.strategies.candidates(spec)]
+        return all(k in arms and arms[k].n_eff >= target for k in keys)
+
+    for _ in range(6000):
+        if all_sampled():
+            break
+        h.generate(prompt, check=lambda t: t == "ok")
+    assert all_sampled()  # exploration stops once every arm has enough data
+    assert not any(h.generate(prompt, check=lambda t: t == "ok").trace.explored for _ in range(200))

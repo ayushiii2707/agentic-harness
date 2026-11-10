@@ -115,7 +115,8 @@ class AdaptiveHarness:
         aux_adapters: Mapping[str, ProviderAdapter] | None = None,
         **provider_options: Any,
     ) -> None:
-        self.config = HarnessConfig.from_env(config)
+        # Explicit configuration wins: environment settings apply only when no config is passed (finding F8).
+        self.config = config if config is not None else HarnessConfig.from_env()
         self.provider = provider
         self.model = model
         if adapter is not None:
@@ -318,14 +319,20 @@ class AdaptiveHarness:
             self._messages(prompt, system), settings, can_explore=check is not None, extra=extra
         )
         trial_id = uuid.uuid4().hex
+        finished = False
         try:
             for event in self.adapter.stream(plan.sent):
                 if event.result is not None:
                     self._finish(trial_id, plan, event.result, check, background=background)
+                    finished = True
                 yield event
         except ProviderError as e:
+            finished = True
             self._record(trial_id, plan, None, error=e)
             raise
+        finally:
+            if not finished:  # the consumer stopped early, or the stream ended without a result (finding F12)
+                self._record(trial_id, plan, None, error=RuntimeError("stream closed before the final event"))
 
     def flush(self, timeout: float | None = None) -> bool:
         """Wait for background evaluations (and an automatic recalibration, if one is running). True if all done."""
@@ -337,13 +344,15 @@ class AdaptiveHarness:
         if self.store is None:
             return EvalStatus.NO_EVALUATION.value
         row = self.store.query_one(
-            "SELECT model_ref, category_id, strategy_id, strategy_version FROM trial WHERE id=?",
+            "SELECT model_ref, profile_id, category_id, strategy_id, strategy_version FROM trial WHERE id=?",
             (response_id,),
         )
         if row is None:
             raise KeyError(f"unknown response id {response_id!r}")
-        profile_id = None
-        if row["model_ref"] is not None:
+        # Credit the profile that served the response (finding F5). Trials recorded before migration 0003 have no
+        # profile id; they fall back to the model's latest profile, as before.
+        profile_id = row["profile_id"]
+        if profile_id is None and row["model_ref"] is not None:
             p = self.store.query_one(
                 "SELECT id FROM profile WHERE model_ref=? ORDER BY profile_version DESC LIMIT 1",
                 (row["model_ref"],),
@@ -391,8 +400,9 @@ class AdaptiveHarness:
                     log.warning("could not record model facts: %s", e)
         return info
 
-    def close(self) -> None:
-        self.orchestrator.close()
+    def close(self, timeout: float | None = 30.0) -> None:
+        """Cancel background calibration, wait up to ``timeout`` s for pending background checks, release resources."""
+        self.orchestrator.close(timeout)
         self.adapter.close()
         if self.store is not None:
             self.store.close()
@@ -440,6 +450,8 @@ class AdaptiveHarness:
             seed=settings.get("seed"),
         )
         original = CompletionRequest.build(self.model, messages, gen, extra)
+        if not any(m.content.strip() or m.tool_calls for m in original.messages):
+            raise ValueError("the prompt is empty")  # never pay for an empty request (finding F15)
         identity = self.strategies.get("identity")
 
         def passthrough(reason: str, spec: TaskSpec | None = None, notes: tuple[str, ...] = ()) -> _Plan:
@@ -538,7 +550,7 @@ class AdaptiveHarness:
         except Exception as e:
             log.warning("could not record the trial: %s: %s", type(e).__name__, e)
             profile_id = None
-        if self.config.calibration.auto and plan.experiment_id is None:
+        if self.config.calibration.auto is not False and plan.experiment_id is None:
             try:
                 self.orchestrator.maybe_recalibrate(self._current_profile()[1])
             except Exception as e:
@@ -592,26 +604,29 @@ class AdaptiveHarness:
         if self.store is None:
             return
         try:
-            already_counted = self.store.query_one(
-                "SELECT 1 FROM evaluation WHERE trial_id=? AND status IN ('success','failure','partial')",
-                (trial_id,),
-            )
-            self.store.execute(
-                "INSERT INTO evaluation(trial_id, evaluator_id, evaluator_version, status, score, details_json, "
-                "created_at) VALUES (?,?,?,?,?,?,?)",
-                (
-                    trial_id,
-                    evaluation.evaluator_id,
-                    evaluation.evaluator_version,
-                    evaluation.status.value,
-                    evaluation.outcome,
-                    json.dumps({"details": self._keep_details(evaluation.details)}),
-                    time.time(),
-                ),
-            )
             outcome = evaluation.outcome
-            # One outcome per trial updates the evidence; later evaluations of the same trial are kept as records.
-            if outcome is not None and not already_counted and self.evidence and profile_id and category:
+            row_values = (
+                trial_id,
+                evaluation.evaluator_id,
+                evaluation.evaluator_version,
+                evaluation.status.value,
+                outcome,
+                json.dumps({"details": self._keep_details(evaluation.details)}),
+                time.time(),
+            )
+            insert = (
+                "INSERT {} INTO evaluation(trial_id, evaluator_id, evaluator_version, status, score, details_json, "
+                "created_at, counted) VALUES (?,?,?,?,?,?,?,?)"
+            )
+            # At most one evaluation per trial counts as evidence. The unique index on (trial_id) WHERE counted=1
+            # decides atomically which one, even across threads and processes (finding F4); a later evaluation is
+            # kept as a record only.
+            counted = False
+            if outcome is not None:
+                counted = self.store.execute(insert.format("OR IGNORE"), (*row_values, 1)) == 1
+            if not counted:
+                self.store.execute(insert.format(""), (*row_values, 0))
+            if counted and outcome is not None and self.evidence and profile_id and category:
                 row = self.store.query_one(
                     "SELECT input_tokens, output_tokens FROM trial WHERE id=?", (trial_id,)
                 )
@@ -645,7 +660,16 @@ class AdaptiveHarness:
                 "reference_mean": r.reference_mean,
             }
             if mark_drift(self.store, profile_id, detail):
-                log.warning("outcome drift detected for %s (%s); profile marked stale", self.model, detail)
+                # The old evidence describes behaviour that has changed: keep it for audit, and start a fresh
+                # profile version at once so learning resumes without a manual recalibration (finding F2).
+                row = self.store.query_one("SELECT model_ref FROM profile WHERE id=?", (profile_id,))
+                if row is not None and self.models is not None:
+                    self.models.next_profile(int(row["model_ref"]), status="cold")
+                log.warning(
+                    "outcome drift detected for %s (%s); profile marked stale, a new profile version started",
+                    self.model,
+                    detail,
+                )
 
     def _record(
         self, trial_id: str, plan: _Plan, result: CompletionResult | None, error: Exception | None = None
@@ -684,17 +708,19 @@ class AdaptiveHarness:
                         obs.resolved_version,
                     )
             self.store.execute(
-                """INSERT INTO trial(id, experiment_id, task_ref, model_ref, category_id, provider, model_requested,
+                """INSERT INTO trial(id, experiment_id, task_ref, model_ref, profile_id, category_id, provider,
+                     model_requested,
                      model_reported, strategy_id, strategy_version, settings_json, prompt_hash, original_prompt,
                      transformed_prompt, response_text, finish_reason, input_tokens, output_tokens, reasoning_tokens,
                      cost_usd, cost_is_estimated, latency_s, retries, fingerprint_json, dropped_settings, error,
                      status, simulated, trace_json, created_at, finished_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     trial_id,
                     plan.experiment_id,
                     plan.task_ref,
                     model_ref,
+                    profile_id,
                     trace.category,
                     self.adapter.name,
                     plan.sent.model,
@@ -724,7 +750,14 @@ class AdaptiveHarness:
                     time.time(),
                 ),
             )
-            if result is not None and result.cost_usd and self.ledger is not None:
+            # Calibration calls are harness spend, committed by the calibrator; only the developer's own calls are
+            # recorded as user spend (finding F6).
+            if (
+                result is not None
+                and result.cost_usd
+                and self.ledger is not None
+                and plan.experiment_id is None
+            ):
                 self.ledger.record_user_spend(
                     result.cost_usd, note=f"generate {self.adapter.name}:{plan.sent.model}"
                 )
