@@ -154,3 +154,27 @@ def test_timeouts_are_normalised() -> None:
     t, _ = transport(attempts=1)
     with pytest.raises(ProviderTimeoutError):
         t.request_json("POST", "thing", {})
+
+
+def test_groq_token_rate_limit_is_retryable_even_with_a_billing_link() -> None:
+    """Regression: Groq's TPM 429 links to /settings/billing and was mapped to a terminal QuotaExceededError."""
+    from adaptive_harness.errors import RateLimitError
+    from adaptive_harness.providers._http import map_error
+
+    body = (
+        '{"error":{"message":"Rate limit reached for model `m` in organization `org_01abcdefghijkl` service tier '
+        "`on_demand` on tokens per minute (TPM): Limit 1000, Used 966, Requested 56. Please try again in 1.32s. "
+        'Need more tokens? Upgrade at https://console.groq.com/settings/billing","type":"tokens",'
+        '"code":"rate_limit_exceeded"}}'
+    )
+    err = map_error("groq", 429, body, {})
+    assert isinstance(err, RateLimitError)
+    assert err.retry_after == pytest.approx(1.32, abs=0.01)
+    assert "org_01abcdefghijkl" not in str(err) and "org_<redacted>" in str(err)
+    quota = map_error(
+        "openai",
+        429,
+        '{"error":{"message":"You exceeded your current quota","code":"insufficient_quota"}}',
+        {},
+    )
+    assert not isinstance(quota, RateLimitError)

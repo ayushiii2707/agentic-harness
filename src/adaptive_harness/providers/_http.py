@@ -46,6 +46,10 @@ _CONTEXT_HINTS = (
     "input is too long",
     "reduce the length",
 )
+_RATE_HINTS = ("rate limit reached", "rate_limit_exceeded", "try again in", "please retry in")
+# Provider account identifiers that error bodies sometimes echo (e.g. Groq "organization org_..."). Masked before
+# an error message reaches logs, traces or reports.
+_ACCOUNT_ID = re.compile(r"\b((?:org|organization|acct|account|proj|project)[-_])[A-Za-z0-9]{6,}\b")
 _QUOTA_HINTS = (
     "insufficient_quota",
     "exceeded your current quota",
@@ -106,10 +110,13 @@ def map_error(provider: str, status: int, body: str, headers: Mapping[str, str])
     low = body.lower()
     request_id = headers.get("x-request-id") or headers.get("request-id")
     kw: dict[str, Any] = {"provider": provider, "status_code": status, "request_id": request_id}
-    text = f"{provider} HTTP {status}: {msg}"
+    text = _ACCOUNT_ID.sub(r"\1<redacted>", f"{provider} HTTP {status}: {msg}")
     if status in (401, 403) or "api_key_invalid" in low or "api key not valid" in low:
         return AuthenticationError(text, **kw)
     # Anthropic reports an empty balance as HTTP 400, OpenAI as 429; both are hard quota, not retryable.
+    # A temporary limit says so ("try again in 1.3s"), even when the body also links to a billing page (Groq).
+    if status == 429 and any(h in low for h in _RATE_HINTS):
+        return RateLimitError(text, retry_after=parse_retry_after(headers, body), **kw)
     if status == 402 or (status in (400, 429) and any(h in low for h in _QUOTA_HINTS)):
         return QuotaExceededError(text, **kw)
     if status == 429:
