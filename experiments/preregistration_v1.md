@@ -184,3 +184,17 @@ set to $0.001 against a bookkeeping budget in the experiment database; the user'
      gpt-oss-20b, 284 of 1000 for qwen3.8-27b, 256 of 1000 for gemini-3.5-flash-lite); no API or evaluation
      errors; the Docker sandbox ran the code tests.
    - **No operational setting was changed.**
+2. **2026-11-10, gpt-oss-20b moved to OpenRouter (before any held-out call).**
+   - **Why:** after 325 of 735 calibration calls, Groq's free tier stopped gpt-oss-20b at its daily token limit
+     (200,000 tokens). At that rate it needed about 4–5 more days, beyond the 3-day window, and the B+ selection
+     (which pools all models) blocked every model's held-out runs.
+   - **Change,** approved by the owner:
+     - gpt-oss-20b runs on OpenRouter, pinned to one host, DeepInfra bf16, with fallbacks to other hosts
+       disabled. OpenRouter serves this model from 11 hosts at fp4, fp8 and bf16, so pinning keeps the serving
+       setup fixed.
+     - It is paid: a hard $1.00 budget in this model's experiment database, and a $0.0005 reservation per call
+       (the worst case at 2000 output tokens is about $0.0003).
+     - The 325 Groq calibration trials are **discarded**, so all of this model's data comes from one provider and
+       one host. They stay in their own database, unused.
+   - **Unchanged:** the model, generation settings, tasks, conditions and analysis. qwen3.8-27b and Gemini are
+     unaffected.

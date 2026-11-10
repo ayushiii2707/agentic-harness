@@ -118,12 +118,15 @@ def make_harness(
         persistence=PersistenceConfig(
             path=db, prompt_storage="full"
         ),  # our own synthetic tasks: keep everything
-        budget=BudgetConfig(total_usd=cfg["bookkeeping"]["budget_usd"]),
+        budget=BudgetConfig(total_usd=entry.get("budget_usd", cfg["bookkeeping"]["budget_usd"])),
         http=HTTPConfig(timeout_s=300.0, max_attempts=4, max_total_wait_s=180.0),
         policy=PolicyConfig(exploration_rate=0.0),  # frozen defaults otherwise (preregistration §4)
         calibration=CalibrationConfig(auto=False),
     )
-    return AdaptiveHarness(provider=entry["provider"], model=entry["model"], config=config, adapter=adapter)
+    options = {"extra_body": entry["extra_body"]} if entry.get("extra_body") and adapter is None else {}
+    return AdaptiveHarness(
+        provider=entry["provider"], model=entry["model"], config=config, adapter=adapter, **options
+    )
 
 
 def ensure_experiment(h: AdaptiveHarness, cfg: dict[str, Any], exp_id: str) -> None:
@@ -160,7 +163,13 @@ class Collector:
             return
         assert self.h.ledger is not None
         local = self.h.adapter.capabilities().local
-        cap = 0.0 if local else float(self.cfg["bookkeeping"]["max_cost_per_call_usd"])
+        cap = (
+            0.0
+            if local
+            else float(
+                self.entry.get("max_cost_per_call_usd", self.cfg["bookkeeping"]["max_cost_per_call_usd"])
+            )
+        )
         try:
             reservation = self.h.ledger.reserve(cap, experiment_id=self.exp_id, note=ref)
         except BudgetExceededError as e:
