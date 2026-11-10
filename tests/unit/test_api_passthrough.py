@@ -117,3 +117,19 @@ def test_empty_prompts_are_rejected_before_any_call(tmp_path: Path) -> None:
         with _pytest.raises(ValueError):
             h.generate(p)
     assert model.requests == []
+
+
+def test_preview_shows_the_decision_without_calling_the_model(tmp_path: Path) -> None:
+    from adaptive_harness import AdaptiveHarness, HarnessConfig, PersistenceConfig
+    from adaptive_harness.providers import MockProvider
+
+    model = MockProvider()
+    h = AdaptiveHarness(
+        provider="mock",
+        model="m",
+        adapter=model,
+        config=HarnessConfig(persistence=PersistenceConfig(path=tmp_path / "h.db")),
+    )
+    p = h.preview("What is 17 times 23?")
+    assert p.trace.strategy_id == "identity" and p.messages[-1].content == "What is 17 times 23?"
+    assert model.requests == [] and h.store is not None and h.store.query("SELECT id FROM trial") == []

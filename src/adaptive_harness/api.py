@@ -88,6 +88,14 @@ class HarnessResponse:
 
 
 @dataclass(frozen=True)
+class Preview:
+    """The decision ``generate`` would make: its trace and the exact messages it would send."""
+
+    trace: Trace
+    messages: tuple[Message, ...]
+
+
+@dataclass(frozen=True)
 class _Plan:
     original: CompletionRequest
     sent: CompletionRequest
@@ -333,6 +341,22 @@ class AdaptiveHarness:
         finally:
             if not finished:  # the consumer stopped early, or the stream ended without a result (finding F12)
                 self._record(trial_id, plan, None, error=RuntimeError("stream closed before the final event"))
+
+    def preview(
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        extra: Mapping[str, Any] | None = None,
+        **settings: Any,
+    ) -> Preview:
+        """What ``generate`` would send for ``prompt`` right now (no exploration), without calling the model.
+
+        Nothing is recorded and no model or auxiliary call is made, except that an opt-in LLM rewriter or LLM
+        classifier may run (they are part of planning).
+        """
+        plan = self._plan(self._messages(prompt, system), settings, can_explore=False, extra=extra)
+        return Preview(plan.trace, plan.sent.messages)
 
     def flush(self, timeout: float | None = None) -> bool:
         """Wait for background evaluations (and an automatic recalibration, if one is running). True if all done."""

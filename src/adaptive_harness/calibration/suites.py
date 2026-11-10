@@ -21,7 +21,7 @@ from ..evaluation import Evaluator
 from ..evaluation.builtin import BulletConstraints, JsonFields, ReferenceAnswer, UnitTests
 
 Split = Literal["calibration", "heldout"]
-SUITE_VERSION = "1"
+SUITE_VERSION = "2"  # 2: instructions suite added; UnitTests v2 (unavailable imports fail)
 _SEEDS = {"calibration": 1001, "heldout": 2002}
 
 

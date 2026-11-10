@@ -1,7 +1,7 @@
 """adaptive_harness: a model-agnostic, evidence-driven prompt adaptation harness."""
 
 from ._version import __version__
-from .api import AdaptiveHarness, HarnessResponse, Trace
+from .api import AdaptiveHarness, HarnessResponse, Preview, Trace
 from .config import (
     BudgetConfig,
     CalibrationConfig,
@@ -59,6 +59,7 @@ __all__ = [
     "Message",
     "PersistenceConfig",
     "PolicyConfig",
+    "Preview",
     "ProviderError",
     "ProviderTimeoutError",
     "ProviderUnavailableError",
