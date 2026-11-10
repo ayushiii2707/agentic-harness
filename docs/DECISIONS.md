@@ -104,3 +104,12 @@ approval; "Decided" entries were made by the owner or follow from their instruct
 - **D30.** Calibration skips cells where only identity applies (no comparison is possible).
 - **D31.** Strategy content hashes are persisted in the `strategy` table. A strategy whose stored hash differs
   from its current wording under the same version is disabled, so old evidence is never applied to new wording.
+
+## 2026-11-10 (Phase 8)
+
+- **D32.** Supersedes D7 in part: rewriting strategies are allowed, but only through `apply_strategy` and the
+  preservation check, never directly. The only one shipped is the deterministic `minimal_context`.
+- **D33.** A rewrite must keep **every** content word of the original. Only stop words and the explicit `FILLER`
+  list may be deleted; numbers, literals, identifiers, paths, URLs, languages and formats must stay exact.
+  *Reason:* a 90% threshold accepted a rewrite that dropped part of the task (mutation test). Paraphrase needs a
+  judge, which is not implemented.

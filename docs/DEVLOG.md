@@ -13,10 +13,11 @@
 - **Phase 6, strategy library:** done; pushed.
 - **Decision loop (root-cause fix):** done; pushed.
 - **Phase 9, evaluators and Docker sandbox:** done; pushed.
-- **Phase 7, calibration, plus the second loop review:** implemented, tested, live-checked on Groq.
+- **Phase 7, calibration, plus the second loop review:** done; pushed.
+- **Phase 8, transformation engine and preservation check:** implemented and tested.
   **Awaiting review.**
 - Not implemented yet:
-  - Phase 8: the full preservation check for rewriting strategies;
+  - an LLM-based rewriting strategy (needs an equivalence judge; Phase 8 shipped the deterministic one);
   - Phase 10: evidence decay, backoff, priors and drift;
   - the cost term in the policy;
   - automatic calibration.
@@ -333,3 +334,36 @@ resume without duplicates (test and live: 40 trials, 40 distinct pairs).
 
 **Remaining tables not yet used by any code path:** `prior_evidence` (Phase 10) and `task_category`
 (the taxonomy lives in `taxonomy.json`).
+
+## 2026-11-10: Phase 8 (transformation engine and preservation check)
+**Built:**
+- `transform/engine.py`: `apply_strategy`, the single place where any strategy's output is accepted or rejected.
+  It replaces the guard that used to live inside `api.py`, so generate, chat, stream and calibration all use the
+  same rules.
+- `transform/preservation.py`: `check_rewrite`, the deterministic preservation check (rules in DESIGN §5.4).
+- `strategies/builtin.py`: `minimal_context` (kind `rewriting`). It removes greetings, thanks and politeness
+  phrases and applies only when the prompt has some.
+- `TaskSpec.text` gives strategies the analysed prompt, so they can decide whether they apply.
+
+**Tests (all pass):**
+- **Mutation tests:** the check must reject rewrites that drop a negation, change a number, drop a literal,
+  drop a path, change the language, drop the output format, drop part of the task, truncate, or empty the
+  prompt. 9 of 9 are rejected.
+- **Engine rules:** strategies that edit earlier messages, copy the user's text into a system message, or alter
+  the user's text under a non-rewriting kind are rejected, and the original is sent.
+- **Prompt injection:** an "ignore all previous instructions" prompt stays in the user turn under every
+  applicable strategy, and never appears in a system message.
+- **Dataset property:** on every prompt of the 320-prompt set (plus three extra), `minimal_context` was either
+  accepted with full preservation or fell back to the original. In practice 20 of 21 applicable prompts were
+  accepted; the rejection ("hi" alone would have become empty) was correct.
+- **End to end:** a harness exploring a deliberately harmful rewriting strategy always sent the original prompt
+  and recorded the rejection reason in the trace.
+
+**Defect found by the mutation tests and fixed:** the first check protected only the extracted requirement types
+plus 90% of content words, and it accepted a rewrite that removed "that returns ISO dates". Any fixed percentage
+lets a short requirement disappear from a long prompt. The rule is now that every content word remains (D33).
+
+**Limits, stated plainly:**
+- The check compares words, so it cannot recognise a faithful paraphrase. Paraphrasing rewriters need an
+  independent equivalence judge and are not implemented.
+- The pleasantry list (`FILLER`) is the only content a rewrite may drop.

@@ -217,6 +217,24 @@ learned profiles.
    prompt, ModelKey, category and confidence, strategy id and version, decision reason, posterior summary,
    preservation result, evaluation result if any.
 
+**As implemented (Phase 8, `transform/`):**
+- One engine, `apply_strategy`, is used by every request path (generate, chat, stream, calibration).
+- Rules for all strategy kinds: messages other than the last user message survive unchanged and in order; no
+  harness-added system message may contain the user's text.
+- Identity, additive and structural strategies must keep the user's text verbatim.
+- Rewriting strategies must pass `check_rewrite`:
+  - every number, literal, identifier, path, URL, named language and output format is kept exactly;
+  - each constraint and negative sentence keeps at least 70% of its content words, and the number of negation
+    words does not drop;
+  - **every** content word of the original remains (only stop words and an explicit list of pleasantries may be
+    deleted);
+  - the length ratio stays within 0.4–2.5.
+- A word-level check cannot recognise a faithful paraphrase, so the only rewriting strategy shipped is the
+  deterministic `minimal_context` (it removes greetings, thanks and politeness phrases). The planned `llm_rewrite`
+  needs an independent equivalence judge first and is not implemented.
+- Earlier drafts of the check allowed 10% of content words to go missing; a mutation test showed that this let a
+  rewrite drop "that returns ISO dates" from a prompt, so the requirement became 100%.
+
 ### 5.5 Provider layer (`providers/`)
 
 ```python
