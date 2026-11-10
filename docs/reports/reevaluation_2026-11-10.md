@@ -38,7 +38,7 @@ Synthetic contract tests could not have found this.
 
 ## Other checks
 
-- **Tests:** 283 pass, including 46 real-Docker sandbox tests. ruff and mypy `--strict` are clean.
+- **Tests:** 278 pass on the committed tree, including 46 real-Docker sandbox tests. ruff and mypy `--strict` are clean. (The working folder shows 283 only because the two leftover files duplicate 5 tests.)
 - **Policy simulation** (40 × 400 calls, simulated): 0/40 false switches; the true effect found in 40/40.
 - **Loop audit:** decisions matched calibration in 200/200 held-out prompts.
 - **Overhead:** 0.5 ms p50 per call and 1.0 ms with a check, short prompt.

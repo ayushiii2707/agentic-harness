@@ -490,4 +490,4 @@ trace notes). Everything else was verified as described there.
 - **Fixes.** All fixed except F13 (owner action), each with a regression test (D49–D57).
 - **Re-evaluation.** Every original probe re-run passes. One new defect was found live (the Gemini
   `thoughtSignature`) and fixed.
-- **Tests.** 283 pass; ruff and mypy clean.
+- **Tests.** 278 pass on the committed tree; ruff and mypy clean.
