@@ -84,3 +84,14 @@ approval; "Decided" entries were made by the owner or follow from their instruct
   data is copied.
 - **D25.** `security_targeted` and `few_shot_from_library` are deferred (no licensed knowledge base or curated
   example library yet), and rewriting strategies wait for Phase 8.
+
+## 2026-11-10 (review: decision loop)
+
+- **D26.** The decision loop is built end to end before the remaining phases, because the separately built
+  components had never been connected. Later phases deepen it.
+- **D27.** Evidence comes only from developer-supplied checks (`check=`) and `feedback()`. At most one outcome
+  per response is counted. Built-in proxy checks (syntax, format) will be recorded as secondary results and will
+  not update evidence unless they are the task's declared primary outcome (DESIGN §5.6).
+- **D28.** Exploration is uniform among candidates, not Thompson sampling. Comparisons need `min_trials` (30)
+  for both arms, and the threshold is Bonferroni-corrected. *Reason:* measured false-switch rate 15/40 → 2/40
+  in simulation (DESIGN §6.4, revision note).

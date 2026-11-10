@@ -5,9 +5,10 @@ how that specific model responds to different prompting strategies for different
 transforms your prompts automatically. By default it sends your original prompt unchanged until the evidence
 says a change helps.
 
-> **Status: pre-alpha.** Phase 2 (foundation) and Phase 3 (provider adapters) are in progress.
-> Strategy selection, calibration and learning are **not implemented yet**: today the harness passes prompts
-> through unchanged. See [docs/DESIGN.md](docs/DESIGN.md) for the full design and roadmap.
+> **Status: pre-alpha.** The decision loop works end to end: tasks are classified, strategies are chosen from
+> stored evidence, outcomes you report update that evidence, and the next choice uses it. Calibration,
+> sandboxed evaluators, evidence decay and drift detection are not implemented yet. See
+> [docs/DESIGN.md](docs/DESIGN.md) and [docs/DEVLOG.md](docs/DEVLOG.md).
 
 ## Install (development)
 
@@ -24,8 +25,30 @@ from adaptive_harness import AdaptiveHarness
 h = AdaptiveHarness(provider="ollama", model="qwen2.5-coder:7b")   # local, free, no key
 r = h.generate("Explain binary search and implement it in Python.")
 print(r)          # the model's answer
-print(r.trace)    # what the harness did (today: identity pass-through)
+print(r.trace)    # category, strategy used, and why
 ```
+
+### How it learns
+
+The harness only learns from **real outcomes**: a check you supply, or feedback you report. Without them it never
+counts an answer as a success or failure, and it keeps sending your original prompt.
+
+```python
+from adaptive_harness import AdaptiveHarness, HarnessConfig, PolicyConfig
+
+cfg = HarnessConfig(policy=PolicyConfig(exploration_rate=0.2))  # try other strategies on 20% of checked calls
+h = AdaptiveHarness(provider="groq", model="openai/gpt-oss-20b", config=cfg)
+
+r = h.generate("What is 17 * 23? End with the number only.", check=lambda text: text.strip().endswith("391"))
+r = h.generate("Summarise this release note ...")
+h.feedback(r.id, success=True)    # or score=0.7
+
+h.profile()["evidence"]           # per category and strategy: outcomes seen so far
+```
+
+A strategy replaces your original prompt only after both have at least 30 evaluated outcomes and the evidence
+says it is better by a margin, with high posterior probability (DESIGN §6.4). Evidence is kept per model version,
+in a local SQLite file.
 
 API keys are read from environment variables (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `GEMINI_API_KEY`,
 `GROQ_API_KEY`, `OPENROUTER_API_KEY`, `DEEPSEEK_API_KEY`) or from a local `.env` file. Keys are never logged or

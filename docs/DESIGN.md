@@ -362,23 +362,36 @@ utility(*s*) = P(success | *s*) − λ · E[cost(*s*)] / cost_ref.
 ### 6.4 Decision rule (normal request path)
 
 1. Candidates = the strategies applicable to the category with all requirements met, plus `identity`.
-2. **Exploit mode** (default):
-   - Pick *s\** = argmax of the posterior mean utility.
-   - Use *s\** instead of identity **only if** P(utility(*s\**) > utility(identity) + δ) ≥ 0.90, estimated by
-     Monte-Carlo from the posteriors. δ is the minimum worthwhile gain (default 0.02).
+2. **Exploit mode** (default; *as implemented, revised 2026-11-10*):
+   - Only strategies with at least `min_trials` (default 30) evaluated outcomes are compared, and only once
+     identity also has `min_trials`.
+   - Use the challenger *s\** with the highest P(θ(*s\**) > θ(identity) + δ) **only if** that probability is
+     ≥ 1 − (1 − 0.90)/k, where k is the number of challengers (Bonferroni). Estimated by Monte-Carlo from the
+     posteriors; δ is the minimum worthwhile gain (default 0.02).
    - Otherwise send `identity`.
-3. **Exploration** (opt-in, `online_exploration=True`):
-   - Only allowed on requests with an applicable evaluator whose `cost_class` is within the budget.
-   - With probability ε (default 0.1, capped by the budget), Thompson-sample among candidates whose posterior
-     overlaps the leader's.
-   - Exploration is never used on requests without evaluation (principle 3).
+   - The cost term of §6.3 is not applied yet; it needs the token/cost summaries that Phase 10 adds to
+     `arm_stats`.
+3. **Exploration** (opt-in, `PolicyConfig.exploration_rate`):
+   - Only on calls whose outcome will be observed (the caller passed `check=`); never otherwise (principle 3).
+   - With probability `exploration_rate`, the strategy is drawn **uniformly** among the candidates, identity
+     included.
 4. Below-threshold confidence in the task category → the candidate set shrinks to `identity` plus strategies
    marked `general_safe`.
+5. Outcome signals: only a developer-supplied check (`generate(..., check=fn)`) or `feedback(response_id, ...)`
+   update the evidence, at most once per response. Errors in the check are `evaluation_error` and never count.
 
 Why this rule and not plain UCB or Thompson sampling: the online objective is *do no harm while learning*, not
 minimum regret over an endless stream. A thresholded posterior comparison against a default arm puts the burden
 of proof on the change, as the pre-registered LeBlanc bands did, and it degrades gracefully to "send the original
-prompt". Thompson sampling is kept for the exploration steps, where it did best in the OPTS study.
+prompt".
+
+**Revision, from measurement.** The first implementation used Thompson sampling for exploration, a 0.90
+threshold with no multiplicity correction, and no minimum sample size. In simulation, with no strategy better
+than identity, it switched away from identity in 15 of 40 runs (37%). Thompson sampling starved identity of
+samples, and the rule was re-checked on every call across several challengers. Uniform exploration,
+`min_trials` and the Bonferroni correction brought this to 2 of 40, and the rule still found a truly better
+strategy (0.9 vs 0.3) in 39 of 40 runs, with 400 calls per run (`scripts/simulate_policy.py`; simulated, not
+model evidence).
 
 ### 6.5 Calibration (cold start), the autonomous controller
 

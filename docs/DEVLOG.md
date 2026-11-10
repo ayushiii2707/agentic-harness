@@ -10,9 +10,11 @@
 - **Phase 4, model intelligence:** done; pushed.
 - **Phase 5, task understanding:** done; pushed. Held-out test accuracy 0.688 (see
   `docs/reports/phase5_classifier.md`).
-- **Phase 6, strategy library:** implemented and tested. **Awaiting review.**
-- Strategy selection, calibration and learning are **not** implemented. The harness passes prompts through
-  unchanged and its trace says so.
+- **Phase 6, strategy library:** done; pushed.
+- **Decision loop (root-cause fix, 2026-11-10):** implemented, simulated, and live-checked on Groq. See below.
+  **Awaiting review.**
+- Not implemented yet: calibration (Phase 7), sandboxed and format evaluators (Phase 9), evidence decay, backoff,
+  priors and drift (Phase 10), and the full preservation check for rewriting strategies (Phase 8).
 
 ## 2026-11-09 to 2026-11-10: Phase 0
 - Audited LeBlanc v4 at commit `51522f2` (read-only clone; database queried read-only; recomputation on a copy).
@@ -193,6 +195,61 @@ or outcome drift (Phase 10).
 the model loaded cold on an 8 GB Mac, with a large download running at the same time. A direct call then took
 23 s, and the harness call 10 s. The default was not changed; the docs tell users to raise
 `HTTPConfig.timeout_s` for large local models.
+
+## 2026-11-10: Review: the decision loop (root-cause fix)
+
+**Most significant limitation found:** the components did not form a working system.
+- `generate()` hard-coded `identity`, and nothing outside the strategies package used the strategy library.
+- No code wrote or read the `evaluation` or `arm_stats` tables.
+- So the harness could not observe outcomes, accumulate evidence or choose anything. Every later phase would
+  have been built on untested interfaces.
+- How this was confirmed: a code audit, and a clean wheel install outside the repo that ran the quickstart
+  against Groq. Every call went out unchanged.
+
+**Fix:** the loop is now implemented end to end, as the thinnest correct version of DESIGN §6.4:
+- `evaluation/`: typed outcomes; `run_check()` for developer-supplied checks; `feedback_result()`.
+- `learning/evidence.py`: Beta evidence per (profile, category, strategy@version) in `arm_stats`.
+- `learning/policy.py`: the exploit and explore rule.
+- `config.PolicyConfig`: `exploration_rate` (default 0), `min_gain`, `confidence`, `min_trials`.
+- `api.py`:
+  - classify → candidates → choose → transform, with a verbatim guard (`_preserves`) and fallback to the
+    original prompt on any problem → call → record (original **and** sent prompt, per privacy setting) →
+    evaluate if `check=` is given → update evidence (once per response);
+  - `feedback()`; `profile()["evidence"]`.
+
+Outcome signals are only developer checks and feedback. No proxy metric (such as "the code parses") updates the
+evidence, in line with LeBlanc Finding C.
+
+**A defect found by measurement, and fixed:**
+- The first rule (Thompson exploration, a 0.90 threshold with no correction, no minimum sample) switched away
+  from identity in **15 of 40** simulated runs where no strategy was better.
+- Causes: identity was starved of samples; the rule was re-checked on every call; and several challengers each
+  had a chance to look lucky.
+- Revised rule: uniform exploration, `min_trials = 30` for both arms, Bonferroni-corrected threshold.
+- Result: **2 of 40** false switches, and **39 of 40** runs found a truly better strategy (0.9 vs 0.3), with 400
+  calls per run.
+- A larger run (100 runs × 400 calls, same settings): **3 of 100** false switches, and **98 of 100** runs found
+  the better strategy. See `scripts/simulate_policy.py` (simulated; not model evidence).
+
+**Tests:**
+- Unit: checks, evidence, policy thresholds, exploration gating.
+- End to end with a simulated model: the harness finds the better strategy, then sends it, with the user text
+  verbatim. With nothing better, it keeps the original prompt. With no checks, nothing is learned. A crashing
+  check is not counted. A failing or paraphrasing strategy falls back to the original prompt. `optimize=False`
+  never changes the prompt.
+- 120 unique offline tests pass; ruff and mypy --strict are clean.
+
+**Live check (Groq `openai/gpt-oss-20b`, free, 16 calls, exploration 1.0):**
+- Strategies were applied to real calls (5 of 16 sent a transformed prompt). All 16 answers passed their checks,
+  and 16 trials, 16 evaluations and 7 evidence rows were stored.
+- All answers being correct means these questions are at ceiling for this model, so this run says nothing about
+  which strategy is better. It only verifies the mechanism.
+- 8 of the 16 math questions were classified `general` and 2 `multi_step`. This is the Phase 5 weakness showing
+  live; `general` correctly limited the choice to general-safe strategies.
+
+**Phase order:** this work brings forward the minimal parts of Phases 8 (verbatim guard), 9 (typed outcomes and
+developer checks), 10 (evidence and policy) and 11 (orchestration). The later phases deepen each part instead of
+connecting them for the first time.
 
 ## Known issues / open questions
 - OpenAI and Anthropic chat calls cannot be completed until those accounts have credit. Their adapters are
