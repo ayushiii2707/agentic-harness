@@ -93,7 +93,18 @@ def contrast(
             "p": mcnemar_exact(b, c), "discordance": (b + c) / n if n else math.nan}  # fmt: skip
 
 
+def same_prompt(sel: dict[str, Any], key: str, first: str, second: str) -> bool:
+    """True when both conditions sent the same strategy on every task: their trials are shared, so the contrast is
+    zero by construction and is not a test (preregistration amendment 5)."""
+    return all(
+        strategies_for(sel, key, t)[first] == strategies_for(sel, key, t)[second]
+        for t in sel["models"][key]["D"]
+    )
+
+
 def label(r: dict[str, Any], margin_pp: float, primary: bool) -> str:
+    if r.get("same"):
+        return "identical prompts (shared trials)"
     if r["n"] == 0:
         return "no data"
     if r["q"] < 0.05 and r["lo"] > 0:
@@ -164,6 +175,8 @@ def build(results: Path, cfg: dict[str, Any]) -> str:
                   "output, instructions)", "", "| condition | outcomes | success | 95% Wilson |", "|---|---|---|---|"]  # fmt: skip
         lines += rate_line(table, IN_DIST)
         prim = [contrast(table, a, b, IN_DIST, res, seed) for a, b in CONTRASTS]
+        for (a, b), r in zip(CONTRASTS, prim, strict=True):
+            r["same"] = same_prompt(sel, key, a, b)
         for r, q in zip(prim, benjamini_hochberg([r["p"] for r in prim]), strict=True):
             r["q"] = q
         lines += ["", "### Primary family (pre-registered; BH within the family)", "",
@@ -184,7 +197,9 @@ def build(results: Path, cfg: dict[str, Any]) -> str:
         sec: list[tuple[str, tuple[str, str], dict[str, Any]]] = []
         for suite in (*IN_DIST, *cfg["unseen_categories"]):
             for a, b in CONTRASTS:
-                sec.append((suite, (a, b), contrast(table, a, b, (suite,), res, seed)))
+                r = contrast(table, a, b, (suite,), res, seed)
+                r["same"] = same_prompt(sel, key, a, b)
+                sec.append((suite, (a, b), r))
         for (_, _, r), q in zip(sec, benjamini_hochberg([r["p"] for _, _, r in sec]), strict=True):
             r["q"] = q
         lines += ["", "### Secondary family: per suite, and the held-out category (descriptive; BH within the family)", "",

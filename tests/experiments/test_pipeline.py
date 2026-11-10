@@ -138,3 +138,13 @@ def test_pooled_selection_compares_arms_on_the_same_tasks() -> None:
     a = runner._arm_stats(rows, "identity")
     b = runner._arm_stats(rows, "narrow")
     assert (a.n_trials, b.n_trials) == (80, 80) and a.mean == b.mean  # same tasks, same outcomes
+
+
+def test_contrasts_between_identical_prompts_are_labelled_not_tested(tmp_path: Path) -> None:
+    cfg = config(tmp_path)
+    results, _ = run_all(tmp_path, cfg, model(oracle(cfg)))
+    text = report.build(results, cfg)  # here C, B+ and D all chose role_framing
+    primary = text.split("### Primary family")[1].split("###")[0]
+    assert "| D - C |" in primary
+    line = next(x for x in primary.splitlines() if x.startswith("| D - C |"))
+    assert "identical prompts (shared trials)" in line
