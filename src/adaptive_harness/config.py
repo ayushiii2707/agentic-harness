@@ -80,11 +80,29 @@ class HTTPConfig:
 
 
 @dataclass(frozen=True)
+class PolicyConfig:
+    """Strategy choice (DESIGN §6.4). Defaults: never switch without strong evidence; never explore."""
+
+    exploration_rate: float = 0.0  # share of *checked* calls that try a uniformly random candidate strategy
+    min_gain: float = 0.02  # a strategy must beat identity by at least this success-rate margin...
+    confidence: float = 0.90  # ...with at least this posterior probability (Bonferroni-corrected per challenger)
+    min_trials: int = 30  # evaluated outcomes needed for both identity and the challenger before comparing
+    mc_samples: int = 2000
+
+    def __post_init__(self) -> None:
+        if not 0.0 <= self.exploration_rate <= 1.0 or not 0.5 <= self.confidence < 1.0:
+            raise ConfigurationError("exploration_rate must be in [0, 1] and confidence in [0.5, 1)")
+        if self.min_gain < 0 or self.mc_samples < 100 or self.min_trials < 1:
+            raise ConfigurationError("min_gain must be >= 0, mc_samples >= 100 and min_trials >= 1")
+
+
+@dataclass(frozen=True)
 class HarnessConfig:
     optimize: bool = True  # False = plain pass-through client (baseline condition A)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     persistence: PersistenceConfig = field(default_factory=PersistenceConfig)
     http: HTTPConfig = field(default_factory=HTTPConfig)
+    policy: PolicyConfig = field(default_factory=PolicyConfig)
     log_content: bool = False  # log prompt and response text at DEBUG level
 
     # ------------------------------------------------------------------ loading
@@ -116,7 +134,12 @@ class HarnessConfig:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> HarnessConfig:
-        sections = {"budget": BudgetConfig, "persistence": PersistenceConfig, "http": HTTPConfig}
+        sections = {
+            "budget": BudgetConfig,
+            "persistence": PersistenceConfig,
+            "http": HTTPConfig,
+            "policy": PolicyConfig,
+        }
         kwargs: dict[str, Any] = {}
         known = {f.name for f in fields(cls)}
         for key, value in data.items():
