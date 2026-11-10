@@ -2,7 +2,7 @@
 
 from ._version import __version__
 from .api import AdaptiveHarness, HarnessResponse, Trace
-from .config import BudgetConfig, HarnessConfig, HTTPConfig, PersistenceConfig, PolicyConfig
+from .config import BudgetConfig, HarnessConfig, HTTPConfig, PersistenceConfig, PolicyConfig, RewriterConfig
 from .errors import (
     AuthenticationError,
     BudgetExceededError,
@@ -45,6 +45,7 @@ __all__ = [
     "ProviderUnavailableError",
     "QuotaExceededError",
     "RateLimitError",
+    "RewriterConfig",
     "StoreError",
     "Trace",
     "Usage",

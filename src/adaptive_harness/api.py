@@ -23,7 +23,7 @@ from typing import Any
 from ._logging import get_logger
 from ._version import __version__
 from .budget import BudgetLedger
-from .config import HarnessConfig
+from .config import HarnessConfig, RewriterConfig
 from .errors import StoreError
 from .evaluation import Check, EvalStatus, EvaluationResult, feedback_result, run_check
 from .hashing import text_hash
@@ -36,6 +36,7 @@ from .store import Store
 from .strategies import Strategy, StrategyRegistry
 from .tasks import TaskAnalyzer, TaskSpec
 from .transform import apply_strategy
+from .transform.llm_rewrite import AuxModel, build_llm_rewrite
 from .types import CompletionRequest, CompletionResult, GenerationSettings, Message, StreamEvent
 
 log = get_logger(__name__)
@@ -100,6 +101,7 @@ class AdaptiveHarness:
         adapter: ProviderAdapter | None = None,
         strategies: StrategyRegistry | None = None,
         policy_seed: int | None = None,
+        aux_adapters: Mapping[str, ProviderAdapter] | None = None,
         **provider_options: Any,
     ) -> None:
         self.config = HarnessConfig.from_env(config)
@@ -144,6 +146,31 @@ class AdaptiveHarness:
             except StoreError as e:  # never block the user's call because the store is unavailable
                 log.warning("evidence store unavailable, running stateless: %s", e)
                 self.store = self.models = self.evidence = self.ledger = None
+        if self.config.rewriter is not None:
+            self._add_llm_rewrite(self.config.rewriter, aux_adapters or {})
+
+    def _add_llm_rewrite(self, rc: RewriterConfig, adapters: Mapping[str, ProviderAdapter]) -> None:
+        """Register ``llm_rewrite``. ``adapters`` may supply the "rewriter"/"judge" adapters (tests, custom)."""
+
+        def aux(role: str, provider: str, model: str) -> AuxModel:
+            adapter = adapters.get(role) or create_adapter(
+                provider, **({} if provider.lower() == "mock" else {"http": self.config.http})
+            )
+            return AuxModel(
+                adapter,
+                model,
+                self.ledger,
+                max_cost_per_call_usd=rc.max_cost_per_call_usd,
+                max_tokens=rc.max_tokens,
+            )
+
+        strategy = build_llm_rewrite(
+            aux("rewriter", rc.rewriter_provider, rc.rewriter_model),
+            aux("judge", rc.judge_provider, rc.judge_model),
+        )
+        self.strategies.register(strategy)
+        if self.store is not None:
+            self.strategies.sync_with_store(self.store)
 
     # ------------------------------------------------------------------ public API
     def generate(

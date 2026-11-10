@@ -97,12 +97,34 @@ class PolicyConfig:
 
 
 @dataclass(frozen=True)
+class RewriterConfig:
+    """Opt-in ``llm_rewrite`` strategy (DESIGN §5.4): a rewriter model plus an independent judge model.
+
+    Each auxiliary call reserves ``max_cost_per_call_usd`` from the harness budget; local providers are free.
+    """
+
+    rewriter_provider: str
+    rewriter_model: str
+    judge_provider: str
+    judge_model: str
+    max_cost_per_call_usd: float = 0.001
+    max_tokens: int = 2000  # reasoning models spend part of this before answering
+
+    def __post_init__(self) -> None:
+        if (self.rewriter_provider, self.rewriter_model) == (self.judge_provider, self.judge_model):
+            raise ConfigurationError("the judge must be a different model from the rewriter")
+        if self.max_cost_per_call_usd < 0 or self.max_tokens < 1:
+            raise ConfigurationError("max_cost_per_call_usd must be >= 0 and max_tokens >= 1")
+
+
+@dataclass(frozen=True)
 class HarnessConfig:
     optimize: bool = True  # False = plain pass-through client (baseline condition A)
     budget: BudgetConfig = field(default_factory=BudgetConfig)
     persistence: PersistenceConfig = field(default_factory=PersistenceConfig)
     http: HTTPConfig = field(default_factory=HTTPConfig)
     policy: PolicyConfig = field(default_factory=PolicyConfig)
+    rewriter: RewriterConfig | None = None  # None = no LLM rewriting
     log_content: bool = False  # log prompt and response text at DEBUG level
 
     # ------------------------------------------------------------------ loading
@@ -139,6 +161,7 @@ class HarnessConfig:
             "persistence": PersistenceConfig,
             "http": HTTPConfig,
             "policy": PolicyConfig,
+            "rewriter": RewriterConfig,
         }
         kwargs: dict[str, Any] = {}
         known = {f.name for f in fields(cls)}
