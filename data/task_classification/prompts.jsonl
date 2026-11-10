@@ -1,0 +1,320 @@
+{"id": "cg-01", "category": "code_generation", "prompt": "Write a Python function that returns the n-th Fibonacci number using memoization."}
+{"id": "cg-02", "category": "code_generation", "prompt": "Implement binary search in Java for a sorted int array. Return -1 if the target is missing."}
+{"id": "cg-03", "category": "code_generation", "prompt": "can you write me a bash script that renames all .jpeg files in a folder to .jpg"}
+{"id": "cg-04", "category": "code_generation", "prompt": "Create a TypeScript class for a min-heap with push, pop and peek."}
+{"id": "cg-05", "category": "code_generation", "prompt": "I need a Go program that reads a file line by line and counts how many lines contain the word ERROR."}
+{"id": "cg-06", "category": "code_generation", "prompt": "Write a function in Rust that checks whether a string is a palindrome, ignoring case and spaces."}
+{"id": "cg-07", "category": "code_generation", "prompt": "Generate a Python script that downloads a web page and prints all the links on it."}
+{"id": "cg-08", "category": "code_generation", "prompt": "Implement an LRU cache in C++ with O(1) get and put."}
+{"id": "cg-09", "category": "code_generation", "prompt": "Write a SQL query that returns the top 5 customers by total order value in 2025."}
+{"id": "cg-10", "category": "code_generation", "prompt": "Please code a simple tic-tac-toe game in JavaScript that runs in the browser console."}
+{"id": "cg-11", "category": "code_generation", "prompt": "Write a Python decorator that retries a function up to 3 times when it raises an exception."}
+{"id": "cg-12", "category": "code_generation", "prompt": "Create a Kotlin data class for a User with name, email and age, plus a function that validates the email format."}
+{"id": "cg-13", "category": "code_generation", "prompt": "Write a function that merges two sorted lists into one sorted list without using sort()."}
+{"id": "cg-14", "category": "code_generation", "prompt": "Implement Dijkstra's shortest path algorithm in Python using heapq."}
+{"id": "cg-15", "category": "code_generation", "prompt": "Make a small C program that prints the multiplication table from 1 to 10."}
+{"id": "cg-16", "category": "code_generation", "prompt": "Write a Python generator that yields prime numbers forever."}
+{"id": "cg-17", "category": "code_generation", "prompt": "Code a function in Swift that converts a temperature from Celsius to Fahrenheit and back."}
+{"id": "cg-18", "category": "code_generation", "prompt": "write python code to flatten a nested list of arbitrary depth"}
+{"id": "cg-19", "category": "code_generation", "prompt": "Implement a thread-safe counter class in Java."}
+{"id": "cg-20", "category": "code_generation", "prompt": "Write a PowerShell script that lists the 10 largest files under C:\\Users."}
+{"id": "db-01", "category": "code_debugging", "prompt": "My Python script crashes with 'TypeError: unsupported operand type(s) for +: 'int' and 'str''. Here is the line: total = total + row[2]. How do I fix it?"}
+{"id": "db-02", "category": "code_debugging", "prompt": "Why does this loop never end?\n```js\nlet i = 0;\nwhile (i < 10) { console.log(i); }\n```"}
+{"id": "db-03", "category": "code_debugging", "prompt": "I get 'IndexError: list index out of range' when I run this:\n```python\nfor i in range(len(xs)+1):\n    print(xs[i])\n```"}
+{"id": "db-04", "category": "code_debugging", "prompt": "My React component re-renders forever after I added a useEffect that sets state. What's wrong?"}
+{"id": "db-05", "category": "code_debugging", "prompt": "Traceback (most recent call last):\n  File \"app.py\", line 12, in <module>\n    import pandas as pd\nModuleNotFoundError: No module named 'pandas'\nWhat does this mean and how do I solve it?"}
+{"id": "db-06", "category": "code_debugging", "prompt": "This Java code throws a NullPointerException on the second line. Can you find the bug?\nString s = map.get(key);\nint n = s.length();"}
+{"id": "db-07", "category": "code_debugging", "prompt": "The function is supposed to return the average but it always returns 0. def avg(xs): return sum(xs) // len(xs) * 0 + sum(xs)//len(xs)"}
+{"id": "db-08", "category": "code_debugging", "prompt": "Segmentation fault when I run my C program that reverses a string in place. It works for short strings. Help me debug it."}
+{"id": "db-09", "category": "code_debugging", "prompt": "My unit test fails with AssertionError: expected 3 but got 2. The code counts vowels in a word. Where is the mistake?"}
+{"id": "db-10", "category": "code_debugging", "prompt": "git push is rejected with 'Updates were rejected because the tip of your current branch is behind'. How do I fix this without losing my work?"}
+{"id": "db-11", "category": "code_debugging", "prompt": "Docker container exits immediately with code 0 right after starting. My Dockerfile ends with RUN python server.py. Why?"}
+{"id": "db-12", "category": "code_debugging", "prompt": "The SQL query returns duplicate rows after I added a JOIN on orders. How can I fix it so each customer appears once?"}
+{"id": "db-13", "category": "code_debugging", "prompt": "I'm getting CORS errors in the browser when my frontend calls my Flask backend. What's causing it?"}
+{"id": "db-14", "category": "code_debugging", "prompt": "Why does my Python dictionary lose entries when I iterate and delete keys at the same time? I get RuntimeError: dictionary changed size during iteration."}
+{"id": "db-15", "category": "code_debugging", "prompt": "My Go program deadlocks: 'fatal error: all goroutines are asleep - deadlock!'. I send on an unbuffered channel in main. What's wrong?"}
+{"id": "db-16", "category": "code_debugging", "prompt": "This regex is supposed to match emails but it also matches 'a@b'. Can you spot the problem? ^[\\w.]+@[\\w]+$"}
+{"id": "db-17", "category": "code_debugging", "prompt": "The CSS flexbox items won't center vertically even though I set align-items: center. What am I missing?"}
+{"id": "db-18", "category": "code_debugging", "prompt": "npm install fails with ERESOLVE unable to resolve dependency tree. How do I get past this?"}
+{"id": "db-19", "category": "code_debugging", "prompt": "My recursive factorial function in Python hits RecursionError for n=5000. How can I fix it?"}
+{"id": "db-20", "category": "code_debugging", "prompt": "After upgrading to Python 3.12 my code fails with AttributeError: module 'collections' has no attribute 'Mapping'. Fix?"}
+{"id": "ex-01", "category": "code_explanation", "prompt": "What does this Python line do? squares = {x: x*x for x in range(10) if x % 2 == 0}"}
+{"id": "ex-02", "category": "code_explanation", "prompt": "Explain this regular expression step by step: ^(?=.*[A-Z])(?=.*\\d).{8,}$"}
+{"id": "ex-03", "category": "code_explanation", "prompt": "Can you walk me through how this quicksort implementation works?\n```python\ndef qs(a):\n    if len(a) < 2: return a\n    p = a[0]\n    return qs([x for x in a[1:] if x < p]) + [p] + qs([x for x in a[1:] if x >= p])\n```"}
+{"id": "ex-04", "category": "code_explanation", "prompt": "I don't understand what the 'yield' keyword does in this function. Please explain it simply."}
+{"id": "ex-05", "category": "code_explanation", "prompt": "Explain what this SQL does: SELECT dept, AVG(salary) FROM emp GROUP BY dept HAVING COUNT(*) > 5;"}
+{"id": "ex-06", "category": "code_explanation", "prompt": "What is the difference between `let`, `const` and `var` in this snippet, and why does the output change?"}
+{"id": "ex-07", "category": "code_explanation", "prompt": "Explain line by line what this bash command does: find . -name '*.log' -mtime +7 -exec rm {} \\;"}
+{"id": "ex-08", "category": "code_explanation", "prompt": "How does this React hook work? const [count, setCount] = useState(0);"}
+{"id": "ex-09", "category": "code_explanation", "prompt": "Describe what the following C code prints and why: int a = 5; printf(\"%d %d\", a++, ++a);"}
+{"id": "ex-10", "category": "code_explanation", "prompt": "Can you explain what this Dockerfile does, one instruction at a time?"}
+{"id": "ex-11", "category": "code_explanation", "prompt": "What is this Rust code doing with lifetimes? fn longest<'a>(x: &'a str, y: &'a str) -> &'a str"}
+{"id": "ex-12", "category": "code_explanation", "prompt": "Explain the time complexity of this nested loop and why it is O(n log n) rather than O(n^2)."}
+{"id": "ex-13", "category": "code_explanation", "prompt": "What does `async`/`await` do in this JavaScript function? Explain it to a beginner."}
+{"id": "ex-14", "category": "code_explanation", "prompt": "Please explain how this decorator works and what functools.wraps is for."}
+{"id": "ex-15", "category": "code_explanation", "prompt": "Walk me through what happens when this Python code runs: a = [[0]*3]*3; a[0][0] = 1; print(a)"}
+{"id": "ex-16", "category": "code_explanation", "prompt": "What is the purpose of the `__init__.py` file in this package structure?"}
+{"id": "ex-17", "category": "code_explanation", "prompt": "Explain what this Kubernetes YAML deployment manifest configures."}
+{"id": "ex-18", "category": "code_explanation", "prompt": "Can you explain what this awk one-liner does? awk -F, '{s+=$3} END {print s}' data.csv"}
+{"id": "ex-19", "category": "code_explanation", "prompt": "In this Java code, what does the `synchronized` keyword change about how the method runs?"}
+{"id": "ex-20", "category": "code_explanation", "prompt": "Explain how this binary search code avoids integer overflow with mid = lo + (hi - lo) / 2."}
+{"id": "rf-01", "category": "code_refactoring", "prompt": "Refactor this function to remove the duplicated code and make it more readable:\n```python\ndef area(s, t):\n    if t == 'sq': return s*s\n    if t == 'sq2': return s*s\n```"}
+{"id": "rf-02", "category": "code_refactoring", "prompt": "Clean up this JavaScript: replace the callbacks with async/await and keep the behaviour the same."}
+{"id": "rf-03", "category": "code_refactoring", "prompt": "Can you rewrite this class to follow the single responsibility principle? It currently parses, validates and saves orders."}
+{"id": "rf-04", "category": "code_refactoring", "prompt": "Simplify this nested if-else chain into a dictionary lookup without changing what it returns."}
+{"id": "rf-05", "category": "code_refactoring", "prompt": "Rename the variables in this snippet so they are descriptive, and split the long function into smaller ones."}
+{"id": "rf-06", "category": "code_refactoring", "prompt": "Convert this for-loop into a list comprehension: result = []\nfor x in data:\n    if x > 0:\n        result.append(x * 2)"}
+{"id": "rf-07", "category": "code_refactoring", "prompt": "Refactor this Java code to use streams instead of manual loops."}
+{"id": "rf-08", "category": "code_refactoring", "prompt": "Make this function pure: it currently reads a global config and mutates its argument."}
+{"id": "rf-09", "category": "code_refactoring", "prompt": "Please improve the structure of this module: move the helper functions into a utils file and add type hints."}
+{"id": "rf-10", "category": "code_refactoring", "prompt": "Extract the database access in this Flask view into a repository class so the view only handles HTTP."}
+{"id": "rf-11", "category": "code_refactoring", "prompt": "Reduce the cyclomatic complexity of this validation function. Keep all existing checks."}
+{"id": "rf-12", "category": "code_refactoring", "prompt": "Replace the magic numbers in this code with named constants and tidy up the formatting."}
+{"id": "rf-13", "category": "code_refactoring", "prompt": "Refactor this React class component into a function component with hooks."}
+{"id": "rf-14", "category": "code_refactoring", "prompt": "This Python script is one 300-line main(). Restructure it into functions without changing its output."}
+{"id": "rf-15", "category": "code_refactoring", "prompt": "Can you make this code more idiomatic Go? It was translated directly from Java."}
+{"id": "rf-16", "category": "code_refactoring", "prompt": "Remove the dead code and unused imports from this file and simplify the error handling."}
+{"id": "rf-17", "category": "code_refactoring", "prompt": "Rewrite this SQL query using a CTE so it's easier to read; results must be identical."}
+{"id": "rf-18", "category": "code_refactoring", "prompt": "Refactor these three similar classes to share a common base class."}
+{"id": "rf-19", "category": "code_refactoring", "prompt": "Turn this script with hard-coded paths into a configurable CLI using argparse, same behaviour otherwise."}
+{"id": "rf-20", "category": "code_refactoring", "prompt": "Clean up this messy pandas code: chain the operations and drop the intermediate variables."}
+{"id": "ar-01", "category": "architecture", "prompt": "Design the architecture for a ride-sharing app that needs to handle 1 million daily users. Which services and databases would you use?"}
+{"id": "ar-02", "category": "architecture", "prompt": "Should we use a monolith or microservices for a 5-person startup building an e-commerce platform? Explain the trade-offs."}
+{"id": "ar-03", "category": "architecture", "prompt": "How would you design a URL shortener system that is highly available and scales horizontally?"}
+{"id": "ar-04", "category": "architecture", "prompt": "Propose a system design for real-time chat with message history, presence and push notifications."}
+{"id": "ar-05", "category": "architecture", "prompt": "What architecture would you recommend for an event-driven order processing pipeline? Kafka or SQS?"}
+{"id": "ar-06", "category": "architecture", "prompt": "Describe a scalable architecture for a video streaming service, including CDN, transcoding and storage."}
+{"id": "ar-07", "category": "architecture", "prompt": "Design the data model and service boundaries for a multi-tenant SaaS invoicing product."}
+{"id": "ar-08", "category": "architecture", "prompt": "How should I structure a mobile app backend so it can work offline and sync later?"}
+{"id": "ar-09", "category": "architecture", "prompt": "Give me a high-level design for a search engine over 50 million product listings with sub-second latency."}
+{"id": "ar-10", "category": "architecture", "prompt": "What caching strategy and architecture would you use for a news site with sudden traffic spikes?"}
+{"id": "ar-11", "category": "architecture", "prompt": "Design a fault-tolerant job scheduler that runs millions of cron-like tasks across a cluster."}
+{"id": "ar-12", "category": "architecture", "prompt": "Compare a layered architecture with hexagonal architecture for our banking backend and recommend one."}
+{"id": "ar-13", "category": "architecture", "prompt": "How would you architect a recommendation system that updates in near real time?"}
+{"id": "ar-14", "category": "architecture", "prompt": "Sketch the system design for a ticket booking platform that must never double-sell a seat."}
+{"id": "ar-15", "category": "architecture", "prompt": "We are migrating a monolith to microservices. What's a good decomposition strategy and migration plan?"}
+{"id": "ar-16", "category": "architecture", "prompt": "Design a logging and monitoring architecture for 200 microservices."}
+{"id": "ar-17", "category": "architecture", "prompt": "What would a serverless architecture look like for an image upload and thumbnail service?"}
+{"id": "ar-18", "category": "architecture", "prompt": "Propose an architecture for a collaborative document editor like a shared whiteboard with conflict resolution."}
+{"id": "ar-19", "category": "architecture", "prompt": "How would you design the backend of a food delivery app to handle peak dinner-time load?"}
+{"id": "ar-20", "category": "architecture", "prompt": "Explain how you would design a rate limiter service used by many APIs across regions."}
+{"id": "api-01", "category": "api_development", "prompt": "Build a REST API in Flask with endpoints to create, read, update and delete books."}
+{"id": "api-02", "category": "api_development", "prompt": "Create a FastAPI endpoint POST /orders that validates the request body with Pydantic and returns 201."}
+{"id": "api-03", "category": "api_development", "prompt": "Write an Express.js route that returns a paginated list of users from MongoDB."}
+{"id": "api-04", "category": "api_development", "prompt": "Design the REST endpoints for a todo app: list, create, complete and delete tasks, with proper status codes."}
+{"id": "api-05", "category": "api_development", "prompt": "Add rate limiting to my FastAPI app so each client can make at most 100 requests per minute."}
+{"id": "api-06", "category": "api_development", "prompt": "Write a GraphQL schema and resolvers for authors and their posts."}
+{"id": "api-07", "category": "api_development", "prompt": "Implement a Django REST Framework viewset for a Product model with filtering by category."}
+{"id": "api-08", "category": "api_development", "prompt": "Create an OpenAPI spec for an endpoint GET /weather?city= that returns temperature and humidity."}
+{"id": "api-09", "category": "api_development", "prompt": "Build a Spring Boot controller with GET and POST endpoints for customers."}
+{"id": "api-10", "category": "api_development", "prompt": "How do I version my REST API? Show an example with /v1 and /v2 routes in Express."}
+{"id": "api-11", "category": "api_development", "prompt": "Write a Go HTTP server with a /health endpoint and a /items endpoint that returns JSON."}
+{"id": "api-12", "category": "api_development", "prompt": "Add request validation and consistent error responses to my Flask API endpoints."}
+{"id": "api-13", "category": "api_development", "prompt": "Create a webhook endpoint in Node that receives Stripe events and responds 200 quickly."}
+{"id": "api-14", "category": "api_development", "prompt": "Implement cursor-based pagination for a GET /messages API endpoint in FastAPI."}
+{"id": "api-15", "category": "api_development", "prompt": "Write a gRPC service definition and a Python server for a simple calculator."}
+{"id": "api-16", "category": "api_development", "prompt": "Build an API route in Next.js that accepts a file upload and stores it."}
+{"id": "api-17", "category": "api_development", "prompt": "Write a REST endpoint in Express that searches products by name and price range via query parameters."}
+{"id": "api-18", "category": "api_development", "prompt": "Create CRUD endpoints for a blog post resource in Laravel."}
+{"id": "api-19", "category": "api_development", "prompt": "Add an endpoint to my Flask app that exports the users table as CSV."}
+{"id": "api-20", "category": "api_development", "prompt": "Implement idempotency keys for a POST /payments API endpoint."}
+{"id": "da-01", "category": "data_analysis", "prompt": "I have a CSV of sales with columns date, region and revenue. Using pandas, find the month with the highest revenue per region."}
+{"id": "da-02", "category": "data_analysis", "prompt": "Analyze this dataset of house prices and tell me which features correlate most with price."}
+{"id": "da-03", "category": "data_analysis", "prompt": "Plot the distribution of customer ages from my dataframe and check whether it is normally distributed."}
+{"id": "da-04", "category": "data_analysis", "prompt": "Given monthly website traffic for two years, detect the seasonality and the trend."}
+{"id": "da-05", "category": "data_analysis", "prompt": "How do I compute a 7-day rolling average of daily cases in pandas and visualize it?"}
+{"id": "da-06", "category": "data_analysis", "prompt": "Run a linear regression of salary on years of experience and interpret the coefficients."}
+{"id": "da-07", "category": "data_analysis", "prompt": "Here is survey data with 2,000 responses. Summarize the key statistics and find which group is most satisfied."}
+{"id": "da-08", "category": "data_analysis", "prompt": "Find outliers in this column of transaction amounts using the IQR method."}
+{"id": "da-09", "category": "data_analysis", "prompt": "Compare the conversion rates of A and B in my experiment data and tell me whether the difference is statistically significant."}
+{"id": "da-10", "category": "data_analysis", "prompt": "Group the orders dataframe by customer and calculate lifetime value, then show the top 10."}
+{"id": "da-11", "category": "data_analysis", "prompt": "Clean this dataset: handle missing values, fix the date column and remove duplicates, then describe it."}
+{"id": "da-12", "category": "data_analysis", "prompt": "Make a heatmap of the correlation matrix for these numeric columns using seaborn."}
+{"id": "da-13", "category": "data_analysis", "prompt": "Cluster these customers by purchase behaviour with k-means and describe each cluster."}
+{"id": "da-14", "category": "data_analysis", "prompt": "Calculate churn rate per month from the subscriptions table and chart it."}
+{"id": "da-15", "category": "data_analysis", "prompt": "What is the median, mean and standard deviation of response times in this log data?"}
+{"id": "da-16", "category": "data_analysis", "prompt": "Pivot this long-format dataframe of sensor readings into wide format and find sensors with missing readings."}
+{"id": "da-17", "category": "data_analysis", "prompt": "Analyze the Titanic dataset and explain which factors influenced survival."}
+{"id": "da-18", "category": "data_analysis", "prompt": "Forecast next quarter's sales from this time series with a simple model and report the error."}
+{"id": "da-19", "category": "data_analysis", "prompt": "Segment website visitors by country and device and compute average session duration for each segment."}
+{"id": "da-20", "category": "data_analysis", "prompt": "Use SQL to analyze which product categories grew fastest year over year in the sales table."}
+{"id": "sm-01", "category": "summarisation", "prompt": "Summarize the following article in three bullet points:\nThe city council voted on Tuesday to expand the bike lane network by 40 kilometres over the next two years..."}
+{"id": "sm-02", "category": "summarisation", "prompt": "Give me a TL;DR of this meeting transcript."}
+{"id": "sm-03", "category": "summarisation", "prompt": "Condense this 10-page report into a one-paragraph executive summary."}
+{"id": "sm-04", "category": "summarisation", "prompt": "What are the key points of this email thread? Keep it short."}
+{"id": "sm-05", "category": "summarisation", "prompt": "Summarise this research paper abstract for a non-technical audience in under 100 words."}
+{"id": "sm-06", "category": "summarisation", "prompt": "Can you shorten this product description to two sentences while keeping the main features?"}
+{"id": "sm-07", "category": "summarisation", "prompt": "Summarize the plot of this chapter without spoilers for later chapters."}
+{"id": "sm-08", "category": "summarisation", "prompt": "Make a brief summary of the customer reviews below: what do people like and dislike?"}
+{"id": "sm-09", "category": "summarisation", "prompt": "Recap the main decisions from these meeting notes as a numbered list."}
+{"id": "sm-10", "category": "summarisation", "prompt": "Summarize this legal clause in plain English."}
+{"id": "sm-11", "category": "summarisation", "prompt": "Give a short overview of this podcast transcript, highlighting the three main arguments."}
+{"id": "sm-12", "category": "summarisation", "prompt": "Boil this long Slack discussion down to the action items and who owns them."}
+{"id": "sm-13", "category": "summarisation", "prompt": "Summarize the changes in this release notes document for our users."}
+{"id": "sm-14", "category": "summarisation", "prompt": "Please write a 50-word summary of the text below."}
+{"id": "sm-15", "category": "summarisation", "prompt": "What is the gist of this news story? Two sentences max."}
+{"id": "sm-16", "category": "summarisation", "prompt": "Summarize this GitHub issue thread: what is the bug and what fix was agreed?"}
+{"id": "sm-17", "category": "summarisation", "prompt": "Create a summary of this lecture transcript with headings for each topic."}
+{"id": "sm-18", "category": "summarisation", "prompt": "Summarise the attached policy document: who does it apply to and what changes?"}
+{"id": "sm-19", "category": "summarisation", "prompt": "Distill these interview notes into the five most important insights."}
+{"id": "sm-20", "category": "summarisation", "prompt": "Give me the key takeaways from this book chapter in bullet form."}
+{"id": "rs-01", "category": "research", "prompt": "What does the current research say about the effects of intermittent fasting on long-term weight loss? Cite studies."}
+{"id": "rs-02", "category": "research", "prompt": "Compare the main approaches to automatic prompt optimization in the literature and their limitations."}
+{"id": "rs-03", "category": "research", "prompt": "Find evidence for and against the claim that remote work increases productivity."}
+{"id": "rs-04", "category": "research", "prompt": "Give me an overview of the state of the art in protein structure prediction since 2020, with key papers."}
+{"id": "rs-05", "category": "research", "prompt": "What are the pros and cons of nuclear power compared with solar, based on published data?"}
+{"id": "rs-06", "category": "research", "prompt": "Do a literature review on the use of large language models for code security."}
+{"id": "rs-07", "category": "research", "prompt": "Investigate which programming languages have the fewest memory-safety vulnerabilities and why, with sources."}
+{"id": "rs-08", "category": "research", "prompt": "Survey the existing tools for LLM evaluation and compare their features and licences."}
+{"id": "rs-09", "category": "research", "prompt": "What is known about the causes of the 2008 financial crisis? Summarize the competing explanations with sources."}
+{"id": "rs-10", "category": "research", "prompt": "Research the market size and main competitors for electric scooters in Europe."}
+{"id": "rs-11", "category": "research", "prompt": "Gather the evidence on whether bilingual children have cognitive advantages. Note where studies disagree."}
+{"id": "rs-12", "category": "research", "prompt": "Compare three vector databases for production use, based on benchmarks and documentation."}
+{"id": "rs-13", "category": "research", "prompt": "What have recent studies found about microplastics in drinking water?"}
+{"id": "rs-14", "category": "research", "prompt": "Review the academic literature on contextual bandits for recommendation and list the seminal papers."}
+{"id": "rs-15", "category": "research", "prompt": "Investigate how different countries regulate AI and compare the EU, US and China approaches."}
+{"id": "rs-16", "category": "research", "prompt": "Find and compare published benchmarks of Python web frameworks' performance."}
+{"id": "rs-17", "category": "research", "prompt": "What does the evidence say about the effectiveness of code review at catching bugs? Include sources."}
+{"id": "rs-18", "category": "research", "prompt": "Compile what is known about the health effects of blue light from screens, separating strong and weak evidence."}
+{"id": "rs-19", "category": "research", "prompt": "Research the history and current status of the Rust language's adoption in the Linux kernel."}
+{"id": "rs-20", "category": "research", "prompt": "Survey recent work on retrieval-augmented generation and summarize the open problems."}
+{"id": "qa-01", "category": "question_answering", "prompt": "What is the capital of Australia?"}
+{"id": "qa-02", "category": "question_answering", "prompt": "Who wrote Pride and Prejudice?"}
+{"id": "qa-03", "category": "question_answering", "prompt": "How many bones are in the adult human body?"}
+{"id": "qa-04", "category": "question_answering", "prompt": "When did the Berlin Wall fall?"}
+{"id": "qa-05", "category": "question_answering", "prompt": "What's the difference between a virus and a bacterium?"}
+{"id": "qa-06", "category": "question_answering", "prompt": "Why is the sky blue?"}
+{"id": "qa-07", "category": "question_answering", "prompt": "What does HTTP status code 404 mean?"}
+{"id": "qa-08", "category": "question_answering", "prompt": "Is a tomato a fruit or a vegetable?"}
+{"id": "qa-09", "category": "question_answering", "prompt": "What is the boiling point of water at the top of Mount Everest?"}
+{"id": "qa-10", "category": "question_answering", "prompt": "Which planet has the most moons?"}
+{"id": "qa-11", "category": "question_answering", "prompt": "What is the difference between RAM and storage?"}
+{"id": "qa-12", "category": "question_answering", "prompt": "How long does it take light from the Sun to reach Earth?"}
+{"id": "qa-13", "category": "question_answering", "prompt": "Who invented the telephone?"}
+{"id": "qa-14", "category": "question_answering", "prompt": "What is a black hole?"}
+{"id": "qa-15", "category": "question_answering", "prompt": "What language is spoken in Brazil?"}
+{"id": "qa-16", "category": "question_answering", "prompt": "How does a vaccine work?"}
+{"id": "qa-17", "category": "question_answering", "prompt": "What year did the first iPhone come out?"}
+{"id": "qa-18", "category": "question_answering", "prompt": "What is the tallest mountain in Africa?"}
+{"id": "qa-19", "category": "question_answering", "prompt": "Why do cats purr?"}
+{"id": "qa-20", "category": "question_answering", "prompt": "What does DNS stand for and what does it do?"}
+{"id": "ma-01", "category": "math", "prompt": "Solve for x: 3x + 7 = 22."}
+{"id": "ma-02", "category": "math", "prompt": "What is the derivative of x^3 * sin(x)?"}
+{"id": "ma-03", "category": "math", "prompt": "A train travels 300 km in 2.5 hours. What is its average speed in km/h?"}
+{"id": "ma-04", "category": "math", "prompt": "Compute the integral of 1/(1+x^2) from 0 to 1."}
+{"id": "ma-05", "category": "math", "prompt": "If I roll two fair dice, what is the probability that the sum is 8?"}
+{"id": "ma-06", "category": "math", "prompt": "Prove that the square root of 2 is irrational."}
+{"id": "ma-07", "category": "math", "prompt": "Find the eigenvalues of the matrix [[2, 1], [1, 2]]."}
+{"id": "ma-08", "category": "math", "prompt": "What is 17% of 2,340?"}
+{"id": "ma-09", "category": "math", "prompt": "Sarah has 3 times as many apples as Tom. Together they have 48. How many does Tom have?"}
+{"id": "ma-10", "category": "math", "prompt": "Simplify (x^2 - 9) / (x - 3)."}
+{"id": "ma-11", "category": "math", "prompt": "How many ways can 5 people sit in a row of 5 chairs?"}
+{"id": "ma-12", "category": "math", "prompt": "Solve the system: 2x + y = 10 and x - y = 2."}
+{"id": "ma-13", "category": "math", "prompt": "What is the sum of the first 100 positive integers?"}
+{"id": "ma-14", "category": "math", "prompt": "Calculate the compound interest on $5,000 at 4% per year for 3 years, compounded annually."}
+{"id": "ma-15", "category": "math", "prompt": "Find the limit of (sin x)/x as x approaches 0 and explain why."}
+{"id": "ma-16", "category": "math", "prompt": "What is the area of a circle with radius 7 cm?"}
+{"id": "ma-17", "category": "math", "prompt": "Show that the sum of two odd numbers is always even."}
+{"id": "ma-18", "category": "math", "prompt": "A bag has 4 red and 6 blue balls. Two are drawn without replacement. What's the chance both are red?"}
+{"id": "ma-19", "category": "math", "prompt": "Factor the polynomial x^2 + 5x + 6."}
+{"id": "ma-20", "category": "math", "prompt": "Convert 0.375 to a fraction in lowest terms."}
+{"id": "so-01", "category": "structured_output", "prompt": "Extract the name, email and phone number from this text and return them as JSON: 'Contact Maria Lopez at maria@example.org or 555-0182.'"}
+{"id": "so-02", "category": "structured_output", "prompt": "Convert this list of products and prices into a CSV with columns name,price."}
+{"id": "so-03", "category": "structured_output", "prompt": "Return a JSON object with keys 'sentiment' (positive/negative/neutral) and 'confidence' for this review: 'Great battery, terrible screen.'"}
+{"id": "so-04", "category": "structured_output", "prompt": "Generate a YAML config file with database host, port, user and a list of enabled features."}
+{"id": "so-05", "category": "structured_output", "prompt": "Turn these meeting notes into a markdown table with columns Task, Owner, Due date."}
+{"id": "so-06", "category": "structured_output", "prompt": "Parse this address into street, city, postcode and country fields in JSON: 10 Downing Street, London SW1A 2AA, UK."}
+{"id": "so-07", "category": "structured_output", "prompt": "Produce a JSON array of 5 fictional users, each with id, name and signup_date, matching this schema."}
+{"id": "so-08", "category": "structured_output", "prompt": "Classify each of these support tickets into billing, technical or other and output one JSON line per ticket."}
+{"id": "so-09", "category": "structured_output", "prompt": "Extract every date mentioned in this paragraph and return them in ISO 8601 format as a JSON list."}
+{"id": "so-10", "category": "structured_output", "prompt": "Fill in this JSON template with the details from the invoice text: {\"invoice_no\": \"\", \"total\": 0, \"currency\": \"\"}"}
+{"id": "so-11", "category": "structured_output", "prompt": "Output the recipe below as XML with ingredients and steps as separate elements."}
+{"id": "so-12", "category": "structured_output", "prompt": "Give me the planets of the solar system as a JSON list of objects with name and number_of_moons."}
+{"id": "so-13", "category": "structured_output", "prompt": "Convert this JSON into a CSV table with a header row."}
+{"id": "so-14", "category": "structured_output", "prompt": "Extract the entities (people, organisations, places) from this news paragraph and return them as JSON with three arrays."}
+{"id": "so-15", "category": "structured_output", "prompt": "Return only a JSON object that validates against this JSON Schema, describing a book."}
+{"id": "so-16", "category": "structured_output", "prompt": "Create a table in markdown comparing three laptops by price, weight and battery life."}
+{"id": "so-17", "category": "structured_output", "prompt": "Format the following key-value pairs as a TOML file."}
+{"id": "so-18", "category": "structured_output", "prompt": "Pull out the product name, rating and price from each review and output a CSV."}
+{"id": "so-19", "category": "structured_output", "prompt": "Give the answer strictly as JSON: {\"answer\": string, \"sources\": [string]}."}
+{"id": "so-20", "category": "structured_output", "prompt": "Turn this unstructured job posting into JSON fields: title, company, location, salary_range, skills."}
+{"id": "cn-01", "category": "content_generation", "prompt": "Write a blog post about the benefits of morning walks, around 600 words."}
+{"id": "cn-02", "category": "content_generation", "prompt": "Write a short poem about autumn leaves."}
+{"id": "cn-03", "category": "content_generation", "prompt": "Draft a polite email to my landlord asking to fix the heating."}
+{"id": "cn-04", "category": "content_generation", "prompt": "Create five catchy taglines for an eco-friendly water bottle brand."}
+{"id": "cn-05", "category": "content_generation", "prompt": "Write a bedtime story about a dragon who is afraid of the dark."}
+{"id": "cn-06", "category": "content_generation", "prompt": "Write a LinkedIn post announcing that I've started a new job as a data engineer."}
+{"id": "cn-07", "category": "content_generation", "prompt": "Compose a cover letter for a junior marketing position at a travel company."}
+{"id": "cn-08", "category": "content_generation", "prompt": "Write a product description for handmade ceramic mugs for our online shop."}
+{"id": "cn-09", "category": "content_generation", "prompt": "Write three tweets promoting our webinar on cloud security next Thursday."}
+{"id": "cn-10", "category": "content_generation", "prompt": "Write a wedding toast for my best friend, funny but heartfelt."}
+{"id": "cn-11", "category": "content_generation", "prompt": "Create a script for a 60-second YouTube intro about budget travel."}
+{"id": "cn-12", "category": "content_generation", "prompt": "Write a haiku about debugging at 3 a.m."}
+{"id": "cn-13", "category": "content_generation", "prompt": "Draft a newsletter intro for our gardening club's spring edition."}
+{"id": "cn-14", "category": "content_generation", "prompt": "Write a short story in which the narrator turns out to be a cat."}
+{"id": "cn-15", "category": "content_generation", "prompt": "Write an apology message to customers about yesterday's service outage."}
+{"id": "cn-16", "category": "content_generation", "prompt": "Compose song lyrics about leaving home for the first time."}
+{"id": "cn-17", "category": "content_generation", "prompt": "Write an Instagram caption for a photo of a sunset over the sea."}
+{"id": "cn-18", "category": "content_generation", "prompt": "Draft a speech for a school graduation ceremony, about five minutes long."}
+{"id": "cn-19", "category": "content_generation", "prompt": "Write an engaging landing page headline and subheading for a meditation app."}
+{"id": "cn-20", "category": "content_generation", "prompt": "Create a limerick about a programmer who loves coffee."}
+{"id": "sc-01", "category": "security_sensitive_code", "prompt": "Build a secure Flask authentication API with login, registration, password hashing and session management."}
+{"id": "sc-02", "category": "security_sensitive_code", "prompt": "Write a Python function that stores user passwords safely in a database."}
+{"id": "sc-03", "category": "security_sensitive_code", "prompt": "Fix this code so it is not vulnerable to SQL injection: cursor.execute(\"SELECT * FROM users WHERE name = '\" + name + \"'\")"}
+{"id": "sc-04", "category": "security_sensitive_code", "prompt": "Implement JWT authentication middleware for an Express app, including token expiry and signature verification."}
+{"id": "sc-05", "category": "security_sensitive_code", "prompt": "Write a file upload handler that prevents path traversal and only accepts PNG and JPEG images."}
+{"id": "sc-06", "category": "security_sensitive_code", "prompt": "How do I encrypt sensitive fields in my Django model with AES and manage the encryption key?"}
+{"id": "sc-07", "category": "security_sensitive_code", "prompt": "Sanitize user comments before rendering them in HTML to prevent XSS."}
+{"id": "sc-08", "category": "security_sensitive_code", "prompt": "Add CSRF protection to my Flask forms."}
+{"id": "sc-09", "category": "security_sensitive_code", "prompt": "Write a function that runs a shell command with a user-supplied filename safely, without shell injection."}
+{"id": "sc-10", "category": "security_sensitive_code", "prompt": "Implement OAuth2 login with Google in a FastAPI app, storing tokens securely."}
+{"id": "sc-11", "category": "security_sensitive_code", "prompt": "Generate a cryptographically secure random password reset token in Python and explain how to validate it."}
+{"id": "sc-12", "category": "security_sensitive_code", "prompt": "Review this login endpoint for security vulnerabilities and fix them."}
+{"id": "sc-13", "category": "security_sensitive_code", "prompt": "Write code that verifies a webhook signature using HMAC-SHA256 to make sure the request is authentic."}
+{"id": "sc-14", "category": "security_sensitive_code", "prompt": "Make this XML parser safe against XXE attacks."}
+{"id": "sc-15", "category": "security_sensitive_code", "prompt": "Implement role-based access control so that only admins can delete users in my Node API."}
+{"id": "sc-16", "category": "security_sensitive_code", "prompt": "Write a secure deserialization routine; we currently use pickle.loads on data from clients."}
+{"id": "sc-17", "category": "security_sensitive_code", "prompt": "Add brute-force protection with account lockout to this login function."}
+{"id": "sc-18", "category": "security_sensitive_code", "prompt": "Store API keys for third-party services securely in my application instead of hard-coding them."}
+{"id": "sc-19", "category": "security_sensitive_code", "prompt": "Write a secure password policy check in Java: minimum length, complexity, and checking against breached passwords."}
+{"id": "sc-20", "category": "security_sensitive_code", "prompt": "Validate and escape user input for an LDAP query to prevent LDAP injection."}
+{"id": "ms-01", "category": "multi_step", "prompt": "First read the CSV file, then clean the missing values, then train a simple model, and finally write a short report of the results."}
+{"id": "ms-02", "category": "multi_step", "prompt": "Plan a 5-day trip to Japan: pick the cities, book an itinerary day by day, estimate the budget, and list what to pack."}
+{"id": "ms-03", "category": "multi_step", "prompt": "Step 1: scrape the product prices. Step 2: store them in SQLite. Step 3: email me when any price drops by 10%."}
+{"id": "ms-04", "category": "multi_step", "prompt": "Help me set up a new Python project: create the folder structure, configure linting, write a first test, and set up GitHub Actions CI."}
+{"id": "ms-05", "category": "multi_step", "prompt": "Research three competitors, compare their pricing, then draft a pricing proposal for our product and a slide outline to present it."}
+{"id": "ms-06", "category": "multi_step", "prompt": "Go through these steps: translate the text to French, then summarise it, then list five keywords."}
+{"id": "ms-07", "category": "multi_step", "prompt": "Migrate our database from MySQL to PostgreSQL: export the schema, convert the data types, move the data, and verify row counts."}
+{"id": "ms-08", "category": "multi_step", "prompt": "Create a study plan for learning machine learning in 3 months, then recommend resources for each week, then design a final project."}
+{"id": "ms-09", "category": "multi_step", "prompt": "Diagnose why our website is slow, propose fixes, implement the top two, and measure the improvement."}
+{"id": "ms-10", "category": "multi_step", "prompt": "Write the function, then write unit tests for it, then run through the tests by hand and report any failures."}
+{"id": "ms-11", "category": "multi_step", "prompt": "Organize a team offsite: choose a date, find a venue, plan the agenda, and draft the invitation email."}
+{"id": "ms-12", "category": "multi_step", "prompt": "Break this project into tasks, estimate each task in hours, order them by dependency, and produce a timeline."}
+{"id": "ms-13", "category": "multi_step", "prompt": "Collect the error logs, group them by type, find the root cause of the most common one, and suggest a fix."}
+{"id": "ms-14", "category": "multi_step", "prompt": "Outline the essay, then write the introduction, then write three body paragraphs, then the conclusion."}
+{"id": "ms-15", "category": "multi_step", "prompt": "Set up the dev environment, clone the repo, install dependencies, run the tests and tell me which ones fail."}
+{"id": "ms-16", "category": "multi_step", "prompt": "First extract all the action items from the notes, then assign owners, then turn them into calendar reminders."}
+{"id": "ms-17", "category": "multi_step", "prompt": "Prepare our quarterly review: gather the metrics, compare them with last quarter, explain the changes, and write recommendations."}
+{"id": "ms-18", "category": "multi_step", "prompt": "Design the database schema, then write the migration, then seed it with test data, then write a query to verify it."}
+{"id": "ms-19", "category": "multi_step", "prompt": "Plan a dinner party for 8: create the menu, a shopping list, a cooking schedule and a seating plan."}
+{"id": "ms-20", "category": "multi_step", "prompt": "Evaluate three hosting providers, pick one, then write the deployment steps and a rollback plan."}
+{"id": "ge-01", "category": "general", "prompt": "hi"}
+{"id": "ge-02", "category": "general", "prompt": "Thanks, that was helpful!"}
+{"id": "ge-03", "category": "general", "prompt": "Can you help me with something?"}
+{"id": "ge-04", "category": "general", "prompt": "I'm feeling a bit stressed today."}
+{"id": "ge-05", "category": "general", "prompt": "Tell me something interesting."}
+{"id": "ge-06", "category": "general", "prompt": "What should I do this weekend?"}
+{"id": "ge-07", "category": "general", "prompt": "ok"}
+{"id": "ge-08", "category": "general", "prompt": "Let's continue where we left off."}
+{"id": "ge-09", "category": "general", "prompt": "Give me some advice."}
+{"id": "ge-10", "category": "general", "prompt": "Do you like music?"}
+{"id": "ge-11", "category": "general", "prompt": "Pretend you're my friend and chat with me for a bit."}
+{"id": "ge-12", "category": "general", "prompt": "I have an idea but I'm not sure about it."}
+{"id": "ge-13", "category": "general", "prompt": "good morning!"}
+{"id": "ge-14", "category": "general", "prompt": "Can you be more concise from now on?"}
+{"id": "ge-15", "category": "general", "prompt": "What can you do?"}
+{"id": "ge-16", "category": "general", "prompt": "Hmm, interesting."}
+{"id": "ge-17", "category": "general", "prompt": "Help me think about my career."}
+{"id": "ge-18", "category": "general", "prompt": "That's not what I meant."}
+{"id": "ge-19", "category": "general", "prompt": "Let's play a game."}
+{"id": "ge-20", "category": "general", "prompt": "I need some motivation."}
