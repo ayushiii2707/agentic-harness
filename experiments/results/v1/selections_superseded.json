@@ -1,0 +1,3185 @@
+{
+  "experiment": "phase12-v1",
+  "created_at": 1794337755.828112,
+  "models": {
+    "openrouter:openai/gpt-oss-20b": {
+      "C": {
+        "strategy": "identity",
+        "reason": "identity: no strategy beats it with probability >= 0.983"
+      },
+      "D": {
+        "math-heldout-000": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-001": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-002": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-003": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-004": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-005": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-006": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-007": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-008": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-009": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-010": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-011": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-012": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-013": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-014": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-015": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-016": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-017": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-018": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-019": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-020": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-021": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-022": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-023": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-024": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-025": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-026": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-027": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-028": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-029": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-030": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-031": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-032": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-033": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-034": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-035": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-036": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-037": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-038": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-039": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-040": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-041": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-042": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-043": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-044": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-045": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-046": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-047": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-048": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-049": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-050": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-051": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-052": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-053": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-054": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-055": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-056": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-057": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-058": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-059": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-000": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-001": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-002": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-003": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-004": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-005": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-006": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-007": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-008": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-009": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-010": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-011": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-012": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-013": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-014": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-015": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-016": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-017": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-018": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-019": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-020": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-021": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-022": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-023": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-024": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-025": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-026": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-027": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-028": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-029": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-030": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-031": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-032": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-033": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-034": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-035": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-036": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-037": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-038": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-039": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-040": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-041": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-042": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-043": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-044": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-045": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-046": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-047": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-048": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-049": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-050": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-051": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-052": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-053": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-054": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-055": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-056": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-057": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-058": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-059": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "instr-heldout-000": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-001": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-002": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-003": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-004": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-005": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-006": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-007": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-008": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-009": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-010": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-011": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-012": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-013": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-014": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-015": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-016": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-017": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-018": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-019": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-020": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-021": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-022": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-023": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-024": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-025": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-026": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-027": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-028": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-029": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-030": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-031": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-032": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-033": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-034": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-035": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-036": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-037": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-038": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-039": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-040": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-041": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-042": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-043": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-044": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-045": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-046": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-047": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-048": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-049": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-050": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-051": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-052": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-053": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-054": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-055": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-056": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-057": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-058": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-059": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "code-000": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-001": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-002": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-003": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-004": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-005": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-006": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-007": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-008": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-009": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-010": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-011": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-012": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-013": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-014": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-015": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-016": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-017": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-018": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-019": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-020": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-021": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-022": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-023": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-024": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-025": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-026": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-027": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-028": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-029": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        }
+      }
+    },
+    "groq:qwen/qwen3.8-27b": {
+      "C": {
+        "strategy": "output_schema",
+        "reason": "evidence: P(beats identity by >= 0.020 incl. cost) = 1.000 (required 0.983)"
+      },
+      "D": {
+        "math-heldout-000": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-001": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-002": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-003": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-004": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-005": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-006": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-007": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-008": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-009": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-010": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-011": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-012": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-013": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-014": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-015": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-016": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-017": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-018": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-019": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-020": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-021": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-022": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-023": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-024": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-025": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-026": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-027": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-028": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-029": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-030": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-031": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-032": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-033": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-034": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-035": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-036": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-037": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-038": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-039": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-040": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-041": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-042": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-043": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-044": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-045": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-046": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-047": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-048": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-049": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-050": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-051": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-052": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-053": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-054": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-055": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-056": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-057": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-058": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-059": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-000": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-001": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-002": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-003": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-004": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-005": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-006": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-007": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-008": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-009": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-010": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-011": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-012": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-013": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-014": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-015": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-016": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-017": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-018": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-019": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-020": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-021": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-022": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-023": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-024": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-025": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-026": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-027": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-028": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-029": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-030": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-031": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-032": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-033": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-034": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-035": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-036": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-037": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-038": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-039": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-040": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-041": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-042": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-043": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-044": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-045": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-046": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-047": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-048": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-049": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-050": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-051": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-052": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-053": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-054": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-055": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-056": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-057": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-058": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-059": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "instr-heldout-000": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-001": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-002": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-003": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-004": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-005": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-006": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-007": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-008": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-009": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-010": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-011": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-012": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-013": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-014": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-015": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-016": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-017": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-018": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-019": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-020": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-021": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-022": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-023": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-024": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-025": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-026": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-027": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-028": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-029": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-030": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-031": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-032": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-033": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-034": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-035": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-036": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-037": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-038": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-039": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-040": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-041": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-042": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-043": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-044": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-045": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-046": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-047": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-048": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-049": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-050": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-051": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-052": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-053": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-054": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-055": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-056": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-057": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-058": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-059": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "code-000": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-001": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-002": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-003": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-004": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-005": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-006": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-007": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-008": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-009": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-010": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-011": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-012": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-013": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-014": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-015": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-016": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-017": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-018": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-019": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-020": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-021": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-022": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-023": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-024": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-025": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-026": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-027": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-028": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-029": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        }
+      }
+    },
+    "openrouter:google/gemini-3.5-flash-lite": {
+      "C": {
+        "strategy": "identity",
+        "reason": "identity: no strategy beats it with probability >= 0.983 (best output_schema: 0.982)"
+      },
+      "D": {
+        "math-heldout-000": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-001": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-002": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-003": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-004": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-005": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-006": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-007": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-008": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-009": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-010": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-011": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-012": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-013": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-014": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-015": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-016": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-017": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-018": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-019": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-020": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-021": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-022": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-023": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-024": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-025": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-026": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-027": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-028": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-029": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-030": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-031": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-032": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-033": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-034": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-035": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-036": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-037": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-038": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-039": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-040": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-041": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-042": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-043": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-044": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-045": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-046": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-047": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-048": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-049": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-050": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-051": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-052": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-053": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-054": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-055": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-056": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-057": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-058": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "math-heldout-059": {
+          "strategy": "identity",
+          "category": "math",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-000": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-001": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-002": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-003": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-004": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-005": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-006": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-007": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-008": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-009": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-010": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-011": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-012": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-013": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-014": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-015": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-016": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-017": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-018": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-019": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-020": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-021": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-022": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-023": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-024": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-025": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-026": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-027": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-028": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-029": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-030": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-031": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-032": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-033": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-034": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-035": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-036": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-037": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-038": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-039": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-040": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-041": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-042": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-043": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-044": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-045": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-046": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-047": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-048": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-049": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-050": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-051": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-052": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-053": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-054": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-055": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-056": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-057": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-058": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "json-heldout-059": {
+          "strategy": "identity",
+          "category": "structured_output",
+          "reason": "identity: no strategy beats it with probability >= 0.980"
+        },
+        "instr-heldout-000": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-001": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-002": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-003": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-004": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-005": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-006": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-007": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-008": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-009": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-010": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-011": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-012": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-013": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-014": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-015": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-016": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-017": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-018": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-019": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-020": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-021": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-022": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-023": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-024": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-025": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-026": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-027": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-028": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-029": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-030": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-031": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-032": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-033": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-034": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-035": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-036": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-037": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-038": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-039": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-040": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-041": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-042": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-043": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-044": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-045": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-046": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-047": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-048": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-049": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-050": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-051": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-052": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-053": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-054": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-055": {
+          "strategy": "identity",
+          "category": "content_generation",
+          "reason": "identity: baseline has 4.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-056": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-057": {
+          "strategy": "identity",
+          "category": "research",
+          "reason": "identity: baseline has 2.0 < 30 (decayed) evaluated outcomes"
+        },
+        "instr-heldout-058": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "instr-heldout-059": {
+          "strategy": "identity",
+          "category": "general",
+          "reason": "identity: no other strategy applies to this task"
+        },
+        "code-000": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-001": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-002": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-003": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-004": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-005": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-006": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-007": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-008": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-009": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-010": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-011": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-012": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-013": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-014": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-015": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-016": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-017": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-018": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-019": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-020": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-021": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-022": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-023": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-024": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-025": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-026": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-027": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-028": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        },
+        "code-029": {
+          "strategy": "identity",
+          "category": "code_generation",
+          "reason": "identity: baseline has 0.0 < 30 (decayed) evaluated outcomes"
+        }
+      }
+    }
+  },
+  "B": "structured_sections",
+  "B+": {
+    "strategy": "output_schema",
+    "reason": "evidence: P(beats identity by >= 0.020 incl. cost) = 1.000 (required 0.983)"
+  }
+}

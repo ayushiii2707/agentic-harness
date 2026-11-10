@@ -121,3 +121,20 @@ def test_no_real_effect_is_not_reported_as_an_effect(tmp_path: Path) -> None:
     text = report.build(results, cfg)
     primary = text.split("### Primary family")[1].split("###")[0]
     assert "improves" not in primary and "harms" not in primary
+
+
+def test_pooled_selection_compares_arms_on_the_same_tasks() -> None:
+    """Regression (found before any held-out call): an arm that applies only to easy tasks, and falls back to
+    the original prompt elsewhere, looked better pooled because its fallbacks were credited to identity."""
+    rows = []
+    for i in range(40):  # easy tasks: both arms succeed
+        rows += [{"task_ref": f"cal:easy{i}:identity", "score": 1.0, "tokens": 10},
+                 {"task_ref": f"cal:easy{i}:narrow", "score": 1.0, "tokens": 10}]  # fmt: skip
+    for i in range(40):  # hard tasks: the narrow arm cannot apply, the original prompt is sent and fails
+        rows += [{"task_ref": f"cal:hard{i}:identity", "score": 0.0, "tokens": 10},
+                 {"task_ref": f"cal:hard{i}:narrow", "score": 0.0, "tokens": 10}]  # fmt: skip
+    for r in rows:
+        r["strategy_id"] = r["task_ref"].rsplit(":", 1)[1]
+    a = runner._arm_stats(rows, "identity")
+    b = runner._arm_stats(rows, "narrow")
+    assert (a.n_trials, b.n_trials) == (80, 80) and a.mean == b.mean  # same tasks, same outcomes

@@ -222,3 +222,20 @@ set to $0.001 against a bookkeeping budget in the experiment database; the user'
    - **Note on precision:** gpt-oss-20b's weights are released natively in MXFP4. Groq does not publish its
      quantisation, so the exact numeric precision served is not known; it is the same for every analysed
      gpt-oss trial.
+5. **2026-11-11, selection bug fixed before any held-out call.**
+   - **What went wrong:** the first `select` credited calibration trials to the strategy that was actually *sent*.
+     When an arm cannot be applied to a task (for example `output_schema` on instruction prompts), the harness
+     sends the original prompt, and those trials were credited to identity. The pooled C and B+ comparisons
+     therefore set an arm's results on the tasks where it applies against identity's results on *all* tasks.
+     That is not the paired comparison §5 specifies.
+   - **What it produced:** `output_schema` was selected for qwen3.8-27b's C and for B+, purely through task mix
+     (Simpson's paradox).
+   - **Fix:** intent to treat. Each calibration trial is credited to its *assigned* arm, so every arm is compared
+     on the same 105 tasks; a regression test covers this. D (per cell, the product's own evidence) is
+     unaffected.
+   - **Files:** the first output is kept as `results/v1/selections_superseded.json`. The recomputed
+     `selections.json` was produced before any held-out call.
+   - **Recomputed selections:** B+, C and D are `identity` for all three models; no strategy met the decision
+     rule. As a consequence, A, B+, C and D send identical prompts on the held-out tasks and share their trials.
+     The contrasts D − A, C − A and B+ − A are zero by construction and are reported as such, not as tests. The
+     informative held-out comparisons are B against the original prompt (and therefore D − B), as pre-registered.

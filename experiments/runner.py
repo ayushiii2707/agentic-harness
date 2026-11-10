@@ -220,14 +220,24 @@ def _arm_stats(rows: Sequence[dict[str, Any]], strategy: str) -> ArmStats:
 
 
 def calibration_rows(h: AdaptiveHarness, exp_id: str) -> list[dict[str, Any]]:
+    """Calibration outcomes credited to the arm each trial was **assigned** (intent to treat).
+
+    When an arm cannot be applied to a task, the harness sends the original prompt and records the trial under
+    identity. Crediting such trials to identity would compare each arm on a different set of tasks (an arm that
+    only applies to easy tasks would look better pooled). Grouping by the assigned arm compares every arm on the
+    same tasks, as the paired design intends (preregistration amendment 5).
+    """
     assert h.store is not None
-    return h.store.query(
-        """SELECT t.strategy_id, t.category_id, e.score,
+    rows = h.store.query(
+        """SELECT t.task_ref, t.category_id, e.score,
                   COALESCE(t.input_tokens, 0) + COALESCE(t.output_tokens, 0) AS tokens
            FROM trial t JOIN evaluation e ON e.trial_id = t.id AND e.counted = 1
            WHERE t.experiment_id=? AND t.task_ref LIKE 'cal:%' AND t.status='done'""",
         (exp_id,),
     )
+    for r in rows:
+        r["strategy_id"] = r["task_ref"].rsplit(":", 1)[1]  # cal:<task id>:<assigned arm>
+    return rows
 
 
 def pooled_choice(rows: Sequence[dict[str, Any]], arms: Sequence[str], h: AdaptiveHarness) -> tuple[str, str]:
