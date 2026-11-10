@@ -260,3 +260,17 @@ connecting them for the first time.
 
 ## Remaining phases
 Phases 4–13 as listed in `DESIGN.md` §14, each gated on owner approval.
+
+## 2026-11-10: Phase 9 (evaluators and Docker sandbox)
+- `sandbox/`: a Docker sandbox (no network, read-only root, tmpfs, uid 65534, no capabilities, pids/memory/CPU
+  limits, image pinned by digest). A trusted runner executes the model's code in a separate child process that
+  reports through a private pipe tagged with a per-job nonce. Infrastructure problems are `infra_error`.
+- Self-test (`python -m adaptive_harness.sandbox`): **9 of 9** pass against real Docker. Network blocked, host
+  files invisible, no keys in the environment, read-only root, unprivileged user, infinite loop stopped, memory
+  bomb killed, fork bomb contained, printed fake result ignored.
+- `evaluation/builtin.py`: `PythonSyntax`, `JsonOutput` (weak, structural), `ReferenceAnswer`, `UnitTests`
+  (sandboxed). Any of them can be passed as `check=`.
+- Tests: 146 pass, including 16 against real Docker (skipped, not faked, when Docker is unavailable).
+- Live: Groq `gpt-oss-20b` wrote `is_prime`; the code was run in the sandbox against unit tests (success), and
+  the outcome was recorded as evidence.
+- Not done: gVisor auto-detection; secondary (non-primary) evaluations on the request path.
