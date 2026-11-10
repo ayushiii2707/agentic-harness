@@ -209,3 +209,16 @@ set to $0.001 against a bookkeeping budget in the experiment database; the user'
    - **Possible difference:** OpenRouter's defaults for this model (for example, thinking) may differ from the
      native API's. All analysed Gemini data uses the same route, so conditions stay comparable.
    - **Unchanged:** tasks, conditions, generation settings that are sent (`max_tokens` 1000) and the analysis.
+4. **2026-11-11, gpt-oss-20b host pin changed from DeepInfra to Groq (before any held-out call).**
+   - **Why:** through OpenRouter, DeepInfra throttled repeatedly: 16 HTTP 429 refusals against 3 successes in
+     18 minutes. At that rate the run needed about a day more.
+   - **Change:**
+     - The pin moves to Groq's host on OpenRouter (paid capacity, separate from the free tier's daily limit). A
+       10-call burst succeeded 10/10.
+     - The 227 DeepInfra calibration trials are **discarded**. Their database was renamed with a `discarded-`
+       prefix and kept for audit, not analysed.
+     - Per-call reservation $0.0007 (worst case at 2000 output tokens); the hard $1.00 cap is unchanged; the
+       expected total is about $0.45.
+   - **Note on precision:** gpt-oss-20b's weights are released natively in MXFP4. Groq does not publish its
+     quantisation, so the exact numeric precision served is not known; it is the same for every analysed
+     gpt-oss trial.

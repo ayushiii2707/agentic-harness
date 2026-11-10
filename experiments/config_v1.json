@@ -9,16 +9,16 @@
       "max_tokens": 2000,
       "pause_s": 0.2,
       "budget_usd": 1.0,
-      "max_cost_per_call_usd": 0.0005,
+      "max_cost_per_call_usd": 0.0007,
       "extra_body": {
         "provider": {
           "order": [
-            "deepinfra/bf16"
+            "groq"
           ],
           "allow_fallbacks": false
         }
       },
-      "note": "amendment 2: moved from Groq (free daily token limit) to OpenRouter, pinned to DeepInfra bf16; paid, hard $1.00 cap"
+      "note": "amendments 2 and 4: OpenRouter, pinned to Groq's host; paid, hard $1.00 cap"
     },
     {
       "provider": "groq",
