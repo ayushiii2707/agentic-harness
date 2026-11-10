@@ -446,7 +446,7 @@ trace notes). Everything else was verified as described there.
 | A stale profile waits for a manual calibration | opt-in automatic calibration, free for local models, budget-gated for paid ones | `test_orchestration.py`; Ollama end-to-end run |
 | Sandbox output stored whatever `prompt_storage` is | follows `prompt_storage` | `test_evaluation_details_follow_prompt_storage` |
 | Rewriter calls block `agenerate` | run in a worker thread | `test_async_planning_and_checks_run_off_the_event_loop` |
-| Suites at ceiling, no per-model difference shown | see "Instruction suite, live" below | — |
+| Suites at ceiling, no per-model difference shown | a model-specific result on the new suite (below) | `docs/reports/calibration_cal-97472c9e95.md` |
 
 **Phase 11 acceptance (DESIGN §14):**
 - *`generate()` runs the full path:* yes (`test_system_loop.py`).
@@ -458,3 +458,23 @@ trace notes). Everything else was verified as described there.
 
 **Policy simulation with the exact comparison:** 0/40 false switches; the truly better strategy was found in
 40/40 runs (39/40 with Monte-Carlo). Run time went from 154 s to 48 s.
+
+**Instruction suite, live (Groq free tier, $0 actual spend):**
+- **Ceiling and floor probes,** 12 tasks with the original prompt:
+  - `openai/gpt-oss-20b` passed 12/12 (11/12 on a first, easier version of the suite);
+  - `allam-2-7b` passed 0/12, ignoring the format;
+  - `qwen/qwen3.8-27b` passed 0/12, with the format always right and only the exact word count wrong.
+- **Calibration of qwen3.8-27b with the LLM classifier**
+  (`calibrate.py --llm-classifier groq:openai/gpt-oss-20b`, 184 completed trials over two segments):
+  - in the `content_generation` cell (55 tasks), identity 9/55, requirements_checklist 8/55;
+  - role_framing 0/25 and structured_sections 0/25 were **eliminated** as clearly worse;
+  - the cell is usable by the policy, which keeps identity, because nothing beats it.
+- **Without the LLM classifier,** the first attempt labelled 51 of 60 prompts `general`. Only identity is
+  allowed there, so calibration skipped them; that is why the classifier work mattered.
+- **What this shows and does not show.** The harness learned something model-specific: two strategies that
+  hurt this model on this task. No strategy was shown to *help* it; the minimum detectable effect was 20 pp.
+- **Two defects found by this run and fixed:**
+  - a tokens-per-minute 429 that mentions billing was treated as a terminal quota error, and the error text
+    carried the account's organization ID (D48);
+  - LLM labels were only cached in memory (D47). After the fix, no task was filed under two categories across the
+    resume.
