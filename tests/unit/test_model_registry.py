@@ -60,13 +60,19 @@ def test_new_version_marks_previous_profile_stale() -> None:
     assert reg.latest_model_ref(KEY) == new.model_ref
 
 
-def test_changed_serving_host_on_same_version_marks_stale() -> None:
+def test_a_changed_serving_host_is_a_fact_not_a_model_change() -> None:
+    """Regression (evaluation F2): routers switch hosts; that used to mark the profile stale and stop learning."""
     reg = ModelRegistry(Store(":memory:"))
     a = reg.observe(KEY, result(serving_host="DeepInfra"))
     b = reg.observe(KEY, result(serving_host="OtherHost"))
-    assert b.model_ref == a.model_ref and b.changed
+    assert b.model_ref == a.model_ref and not b.changed
     p = reg.profile(a.model_ref)
-    assert p is not None and p["status"] == "stale"
+    assert p is not None and p["status"] != "stale"
+    hosts = {
+        f["value"]
+        for f in reg.store.query("SELECT value_json AS value FROM model_fact WHERE key='serving_host'")
+    }
+    assert hosts == {'"DeepInfra"', '"OtherHost"'}
 
 
 def test_facts_keep_provenance_and_are_not_duplicated() -> None:

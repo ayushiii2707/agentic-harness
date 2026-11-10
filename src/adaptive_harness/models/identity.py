@@ -14,7 +14,11 @@ from urllib.parse import urlparse
 from ..hashing import canonical_hash
 from ..types import CompletionResult
 
-FINGERPRINT_FIELDS = ("model_reported", "model_version", "serving_host")
+# Fields that say *which model* served a call. ``serving_host`` (e.g. which OpenRouter backend) is deliberately not
+# one of them: routers switch hosts between calls, and treating that as a model change disabled learning
+# (evaluation finding F2). The host is still recorded as an observed fact; a behaviour change it causes is caught
+# by drift detection, which is evidence-based.
+FINGERPRINT_FIELDS = ("model_reported", "model_version")
 _ALIAS_MARKERS = ("latest",)  # e.g. gemini-flash-latest, llama3:latest
 
 

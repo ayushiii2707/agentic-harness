@@ -93,15 +93,26 @@ class Store:
     # ------------------------------------------------------------------ queries
     @contextmanager
     def transaction(self) -> Iterator[sqlite3.Connection]:
+        # sqlite3 errors become StoreError, so callers' "store unavailable" fallbacks catch them (finding F16).
         with self._lock:
-            self._con.execute("BEGIN IMMEDIATE")
+            try:
+                self._con.execute("BEGIN IMMEDIATE")
+            except sqlite3.Error as e:
+                raise StoreError(str(e)) from e
             try:
                 yield self._con
+            except sqlite3.Error as e:
+                self._con.execute("ROLLBACK")
+                raise StoreError(str(e)) from e
             except BaseException:
                 self._con.execute("ROLLBACK")
                 raise
             else:
-                self._con.execute("COMMIT")
+                try:
+                    self._con.execute("COMMIT")
+                except sqlite3.Error as e:
+                    self._con.execute("ROLLBACK")
+                    raise StoreError(str(e)) from e
 
     def execute(self, sql: str, args: Sequence[Any] = ()) -> int:
         """Run one write statement; return the number of affected rows."""

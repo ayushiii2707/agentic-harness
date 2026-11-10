@@ -117,10 +117,10 @@ class ModelRegistry:
         )
         return dict(row, facts=self.facts(model_ref), change_events=events)
 
-    def next_profile(self, model_ref: int) -> int:
-        """Start the next profile version for a model (recalibration of a stale profile). Returns its id.
+    def next_profile(self, model_ref: int, status: str = "calibrating") -> int:
+        """Start the next profile version for a model (after drift, or to recalibrate a stale one). Returns its id.
 
-        The new profile starts with no evidence; the stale one is kept for audit.
+        The new profile starts with no evidence; the old one is kept for audit.
         """
         with self.store.transaction() as con:
             row = con.execute(
@@ -128,7 +128,7 @@ class ModelRegistry:
             ).fetchone()
             cur = con.execute(
                 "INSERT INTO profile(model_ref, profile_version, status, created_at) VALUES (?,?,?,?)",
-                (model_ref, int(row[0]) + 1, "calibrating", time.time()),
+                (model_ref, int(row[0]) + 1, status, time.time()),
             )
             return int(cur.lastrowid or 0)
 

@@ -213,12 +213,10 @@ class EvidenceStore:
         """The cell's most recent counted outcomes, oldest first (for drift detection)."""
         rows = self.store.query(
             """SELECT e.score FROM evaluation e JOIN trial t ON t.id = e.trial_id
-               JOIN profile p ON p.model_ref = t.model_ref AND p.id = ?
-               WHERE t.category_id=? AND t.strategy_id=? AND t.strategy_version=?
-                 AND e.status IN ('success','failure','partial') AND e.score IS NOT NULL
-                 AND t.created_at >= p.created_at
-                 AND e.id = (SELECT MIN(e2.id) FROM evaluation e2 WHERE e2.trial_id = e.trial_id
-                             AND e2.status IN ('success','failure','partial'))
+               JOIN profile p ON p.id = ?
+               WHERE e.counted = 1 AND t.category_id=? AND t.strategy_id=? AND t.strategy_version=?
+                 AND COALESCE(t.profile_id, CASE WHEN t.model_ref = p.model_ref AND t.created_at >= p.created_at
+                                                 THEN p.id END) = p.id
                ORDER BY e.id DESC LIMIT ?""",
             (profile_id, category, strategy_id, version, limit),
         )

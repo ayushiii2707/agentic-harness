@@ -112,3 +112,26 @@ def test_concurrent_reservations_never_exceed_cap(tmp_path: Path) -> None:
         t.join()
     assert sum(ok) <= 1.0 + 1e-9
     assert len(ok) == 10
+
+
+def test_sqlite_errors_inside_a_transaction_become_store_errors(tmp_path: Path) -> None:
+    """Regression (evaluation F16): raw sqlite3 errors escaped the store-unavailable fallbacks."""
+    import pytest as _pytest
+
+    from adaptive_harness.errors import StoreError
+    from adaptive_harness.store import Store
+
+    s = Store(tmp_path / "s.db")
+    with _pytest.raises(StoreError), s.transaction() as con:
+        con.execute("INSERT INTO no_such_table VALUES (1)")
+    assert s.query_one("SELECT 1 AS ok") == {"ok": 1}  # the connection is still usable
+
+
+def test_bounded_cache_evicts_the_least_recently_used() -> None:
+    from adaptive_harness._lru import BoundedCache
+
+    c: BoundedCache[str, int] = BoundedCache(2)
+    c["a"], c["b"] = 1, 2
+    assert c["a"] == 1
+    c["c"] = 3
+    assert "b" not in c and "a" in c and "c" in c and len(c) == 2
