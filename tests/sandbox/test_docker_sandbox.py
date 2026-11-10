@@ -48,3 +48,14 @@ def test_unit_tests_evaluator_end_to_end() -> None:
 def test_missing_image_is_an_infrastructure_error() -> None:
     sb = DockerSandbox(image="adaptive-harness/does-not-exist:never")
     assert sb.run("def sq(x):\n    return x\n", TEST, "sq").status == "infra_error"
+
+
+def test_an_unavailable_import_is_a_model_failure_unless_allowed() -> None:
+    """Regression (evaluation F9): answers importing a non-existent package used to be excluded from evidence."""
+    from adaptive_harness.evaluation import EvalStatus
+    from adaptive_harness.evaluation.builtin import UnitTests
+
+    answer = "```python\nimport fastmathx\ndef sq(x):\n    return fastmathx.sq(x)\n```"
+    assert UnitTests(TEST, "sq", sandbox=SANDBOX).evaluate(answer).status is EvalStatus.FAILURE
+    lenient = UnitTests(TEST, "sq", sandbox=SANDBOX, missing_module_is_env_error=True)
+    assert lenient.evaluate(answer).status is EvalStatus.ERROR

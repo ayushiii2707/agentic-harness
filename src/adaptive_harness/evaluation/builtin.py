@@ -154,16 +154,21 @@ class ReferenceAnswer:
 class UnitTests:
     """Run ``test`` (which defines ``check(candidate)``) against ``entry`` from the answer's Python block.
 
-    Runs only inside the Docker sandbox. Infrastructure problems (Docker down, image missing, missing third-party
-    module) are ``evaluation_error``, never a model failure.
+    Runs only inside the Docker sandbox. Infrastructure problems (Docker down, image missing) are
+    ``evaluation_error``, never a model failure.
+
+    An import the sandbox cannot satisfy is a model **failure** by default: the image is part of the task's
+    environment, and excluding such answers would never penalise a model that invents a package (evaluation
+    finding F9). Set ``missing_module_is_env_error=True`` when your tasks legitimately need packages the image lacks.
     """
 
     test: str
     entry: str
     timeout_s: float = 10.0
     sandbox: DockerSandbox = field(default_factory=DockerSandbox)
+    missing_module_is_env_error: bool = False
     evaluator_id: str = "unit_tests"
-    version: str = "1"
+    version: str = "2"
 
     def evaluate(self, text: str) -> EvaluationResult:
         code = extract_code(text)
@@ -174,7 +179,8 @@ class UnitTests:
         r = self.sandbox.run(code, self.test, self.entry, self.timeout_s)
         if r.status == "pass":
             return EvaluationResult(EvalStatus.SUCCESS, self.evaluator_id, self.version, details=r.detail)
-        if r.status in ("fail", "timeout"):
+        missing_module = r.status == "env_error" and r.detail.startswith("missing module")
+        if r.status in ("fail", "timeout") or (missing_module and not self.missing_module_is_env_error):
             return EvaluationResult(
                 EvalStatus.FAILURE, self.evaluator_id, self.version, details=f"{r.status}: {r.detail}"
             )
