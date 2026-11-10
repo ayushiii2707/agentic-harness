@@ -66,6 +66,8 @@ def _unique(items: list[str]) -> tuple[str, ...]:
 
 
 def _word(term: str, low: str) -> bool:
+    if term not in low:  # the regex can only match where the term occurs; identical result, much cheaper (F7)
+        return False
     left = r"(?<![a-z0-9_])" if term[0].isalnum() else ""
     right = r"(?![a-z0-9_])" if term[-1].isalnum() else ""
     return re.search(left + re.escape(term) + right, low) is not None
