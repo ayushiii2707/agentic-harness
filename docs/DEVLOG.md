@@ -21,7 +21,8 @@
 - **Phase 11, orchestration, plus the known-limits pass:** done.
 - **Independent evaluation and fixes F1–F16:** done (`docs/reports/evaluation_2026-11-10.md`,
   `docs/reports/reevaluation_2026-11-10.md`). F13 needs the owner to delete two leftover files.
-  **Awaiting approval for Phase 12.**
+- **Phase 12, experimental validation:** in progress. Pre-registered (commit e0e6a90) before any data;
+  collection running.
 - Not implemented yet: Phases 12–13.
 
 ## 2026-11-09 to 2026-11-10: Phase 0

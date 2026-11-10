@@ -877,6 +877,19 @@ docs and DEVLOG are updated.
 - **Integrity:** no simulated result is ever reported as a model experiment. Every trial row carries
   `simulated` and `experiment_id`.
 
+**As implemented (Phase 12, `experiments/`, pre-registered in `experiments/preregistration_v1.md` before any
+data):**
+- **Domains:** math, structured output and instruction following are calibrated and tested. Code generation is the
+  held-out category. Security-sensitive code (dataset licence under review) and LLM-judged summarisation are
+  deferred.
+- **No validation split:** nothing is tuned in Phase 12. B+ is chosen on calibration data, which is disjoint from
+  the test data.
+- **Ablations dropped:** "D without priors" is moot, because the priors only cover the security category, which
+  is not tested. The others are left for a later version.
+- **Models:** three free-tier models (gpt-oss-20b, qwen3.8-27b, gemini-3.5-flash-lite).
+- **Size:** 180 in-distribution held-out tasks plus 30 code tasks, each repeated 2 times.
+- **Shared trials:** conditions that pick the same strategy for a task share that trial.
+
 ## 14. Implementation milestones (Phases 2–13)
 
 Each phase ends with: tests green, DEVLOG updated, and a short demo note. **Each phase still needs your approval
