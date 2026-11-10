@@ -83,15 +83,15 @@ def test_policy_needs_strong_evidence_to_leave_identity() -> None:
     assert pol.choose(cands, {}, can_explore=False, exploit_allowed=True).strategy.info.id == "identity"
     # clear evidence -> switch
     strong = {
-        ("identity", "1"): ArmStats("identity", "1", 1 + 6, 1 + 34, 40),
-        ("role_framing", "1"): ArmStats("role_framing", "1", 1 + 30, 1 + 10, 40),
+        ("identity", "1"): ArmStats("identity", "1", 1 + 6, 1 + 34, 40, n_eff=40),
+        ("role_framing", "1"): ArmStats("role_framing", "1", 1 + 30, 1 + 10, 40, n_eff=40),
     }
     d = pol.choose(cands, strong, can_explore=False, exploit_allowed=True)
     assert d.strategy.info.id == "role_framing" and d.p_better is not None and d.p_better >= 0.9
     # weak evidence (3 vs 2 successes) -> stay on identity
     weak = {
-        ("identity", "1"): ArmStats("identity", "1", 1 + 2, 1 + 3, 5),
-        ("role_framing", "1"): ArmStats("role_framing", "1", 1 + 3, 1 + 2, 5),
+        ("identity", "1"): ArmStats("identity", "1", 1 + 2, 1 + 3, 5, n_eff=5),
+        ("role_framing", "1"): ArmStats("role_framing", "1", 1 + 3, 1 + 2, 5, n_eff=5),
     }
     assert pol.choose(cands, weak, can_explore=False, exploit_allowed=True).strategy.info.id == "identity"
     # stale or missing profile -> identity even with strong evidence
