@@ -1,0 +1,38 @@
+# API keys live in a local dotenv file (never committed). Copy env.example to that file.
+.env
+.env.*
+*.pem
+*.key
+credentials.json
+secrets.json
+
+# Local harness data (profiles, trials, budget ledger)
+.harness/
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+
+# Local datasets that must not be redistributed (see docs/DECISIONS.md D11)
+data/external/
+
+# Editors and OS
+.DS_Store
+.vscode/
+.idea/
+.claude/
+CLAUDE.local.md
