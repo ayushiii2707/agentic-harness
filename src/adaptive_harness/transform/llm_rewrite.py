@@ -138,9 +138,9 @@ def _listed(data: Any) -> list[str]:
     for k in ("missing", "added", "changed"):
         v = data.get(k)
         if isinstance(v, list):
-            out += [f"{k}: {str(x)[:80]}" for x in v if str(x).strip()]
+            out += [f"{k}: {str(x)[:80]!r}" for x in v if str(x).strip()]
         elif v:
-            out.append(f"{k}: {str(v)[:80]}")
+            out.append(f"{k}: {str(v)[:80]!r}")
     return out
 
 

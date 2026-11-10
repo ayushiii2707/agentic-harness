@@ -22,3 +22,15 @@ def redact_text(text: str, extra_patterns: Iterable[str] = ()) -> str:
     for p in extra_patterns:
         out = re.sub(p, "<redacted>", out)
     return out
+
+
+_QUOTED = re.compile(r"'(?:[^'\\]|\\.)*'|\"(?:[^\"\\]|\\.)*\"")
+
+
+def scrub_quoted(text: str) -> str:
+    """Replace every quoted span with '…'.
+
+    Diagnostic notes (e.g. why a rewrite was rejected) quote fragments of the user's prompt in quotes; this keeps
+    the diagnosis and drops the fragments, for storage and logs when prompts must not be kept.
+    """
+    return _QUOTED.sub("'…'", text)

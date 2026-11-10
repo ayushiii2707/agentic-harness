@@ -33,7 +33,7 @@ from .learning.priors import load_priors
 from .models import ModelKey, ModelRegistry, deployment_for
 from .providers.base import ModelInfo, ProviderAdapter
 from .providers.registry import create_adapter
-from .redaction import redact_text
+from .redaction import redact_text, scrub_quoted
 from .store import Store
 from .strategies import Strategy, StrategyRegistry
 from .tasks import TaskAnalyzer, TaskSpec
@@ -417,7 +417,7 @@ class AdaptiveHarness:
                 log.warning(
                     "strategy %s not applied, sending the original prompt: %s",
                     strategy.info.id,
-                    applied.reason,
+                    applied.reason if self.config.log_content else scrub_quoted(applied.reason),
                 )
                 return passthrough(
                     f"identity: {strategy.info.id} could not be applied",
@@ -536,6 +536,15 @@ class AdaptiveHarness:
         def keep(text: str) -> str | None:
             return None if storage == "none" else (redact_text(text) if storage == "redacted" else text)
 
+        def keep_note(
+            note: str,
+        ) -> str:  # notes may quote prompt fragments (e.g. a rejected rewrite's reasons)
+            return (
+                scrub_quoted(note)
+                if storage == "none"
+                else (redact_text(note) if storage == "redacted" else note)
+            )
+
         original_text = "\n\n".join(m.content for m in plan.original.messages if m.role == "user")
         sent_text = "\n\n".join(f"[{m.role}] {m.content}" for m in plan.sent.messages)
         u = result.usage if result else None
@@ -588,7 +597,7 @@ class AdaptiveHarness:
                     f"{type(error).__name__}: {error}"[:500] if error else None,
                     "failed" if error else "done",
                     int(result.simulated) if result else 0,
-                    json.dumps(asdict(trace)),
+                    json.dumps(asdict(replace(trace, notes=tuple(keep_note(n) for n in trace.notes)))),
                     time.time(),
                     time.time(),
                 ),

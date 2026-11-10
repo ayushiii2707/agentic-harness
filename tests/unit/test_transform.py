@@ -150,3 +150,34 @@ def test_harness_sends_the_original_when_a_rewrite_is_rejected(tmp_path: Path) -
         assert model.requests[-1].messages[-1].content == prompt
         seen_rejection |= any("bad_rewrite rejected" in n for n in r.trace.notes)
     assert seen_rejection
+
+
+def test_stored_rejection_notes_never_quote_the_prompt(tmp_path: Path) -> None:
+    """Regression: with prompt_storage="none", rejection reasons used to store prompt fragments in trace_json."""
+
+    class Drops(Strategy):
+        info: ClassVar[StrategyInfo] = StrategyInfo("drops", "1", "rewriting", "d", "u", "l")
+
+        def transform(self, messages, spec):  # type: ignore[no-untyped-def]
+            return self._result([Message("user", "Write it.")])
+
+    h = AdaptiveHarness(
+        provider="mock",
+        model="m",
+        adapter=MockProvider(),
+        strategies=StrategyRegistry((BUILTIN[0], Drops())),
+        config=HarnessConfig(
+            persistence=PersistenceConfig(path=tmp_path / "h.db"), policy=PolicyConfig(exploration_rate=1.0)
+        ),
+        policy_seed=0,
+    )
+    prompt = "Write the payroll export for ACME-PRIVATE. Do not include salaries above 90000 in /hr/acme.csv"
+    rejected = 0
+    for _ in range(8):
+        r = h.generate(prompt, check=lambda t: True)
+        rejected += any("drops rejected" in n for n in r.trace.notes)
+    assert rejected and h.store is not None
+    stored = " ".join(row["trace_json"] for row in h.store.query("SELECT trace_json FROM trial"))
+    assert "drops rejected" in stored
+    for fragment in ("90000", "/hr/acme.csv", "ACME", "salaries"):
+        assert fragment not in stored
