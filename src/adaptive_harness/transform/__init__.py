@@ -1,7 +1,8 @@
 """Strategy application with preservation guards; failures fall back to the original prompt."""
 
+from ..auxiliary import AuxModel
 from .engine import Applied, apply_strategy
-from .llm_rewrite import AuxModel, LlmRewrite, build_llm_rewrite
+from .llm_rewrite import LlmRewrite, build_llm_rewrite
 from .preservation import PreservationResult, check_rewrite, exact_problems
 
 __all__ = [
