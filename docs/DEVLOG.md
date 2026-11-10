@@ -329,7 +329,7 @@ resume without duplicates (test and live: 40 trials, 40 distinct pairs).
   not yet usable (minimum detectable effect 35 pp at that sample size).
 - A meaningful calibration needs either more calls or harder tasks.
 
-**Tests:** 184 pass, including 45 against real Docker. ruff and mypy --strict are clean.
+**Tests:** 179 pass on the committed tree, including the real-Docker tests; ruff and mypy --strict are clean. (Running in the working folder shows 184 only because two leftover untracked files duplicate 5 tests.)
 
 **Remaining tables not yet used by any code path:** `prior_evidence` (Phase 10) and `task_category`
 (the taxonomy lives in `taxonomy.json`).
