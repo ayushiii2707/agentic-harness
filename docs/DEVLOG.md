@@ -6,10 +6,11 @@
   cap, free providers first).
 - **Phase 2, foundation:** done; pushed to `feat/foundation-and-providers`.
 - **Phase 3, provider adapters:** done. Live-verified on Groq, Gemini and OpenRouter; OpenAI and Anthropic
-  reached but their accounts have no credit; local Ollama pending the model download.
+  reached but their accounts have no credit; local Ollama live-verified with `qwen2.5vl:3b`.
 - **Phase 4, model intelligence:** done; pushed.
-- **Phase 5, task understanding:** implemented and evaluated. Held-out test accuracy is 0.688 (see
-  `docs/reports/phase5_classifier.md`). **Awaiting review.**
+- **Phase 5, task understanding:** done; pushed. Held-out test accuracy 0.688 (see
+  `docs/reports/phase5_classifier.md`).
+- **Phase 6, strategy library:** implemented and tested. **Awaiting review.**
 - Strategy selection, calibration and learning are **not** implemented. The harness passes prompts through
   unchanged and its trace says so.
 
@@ -154,6 +155,44 @@ or outcome drift (Phase 10).
 - So the policy (Phase 10) keeps identity as the default and backs off to parent and model-level evidence, as
   designed.
 - Experiments must report results by *predicted* category and examine misclassification.
+
+## 2026-11-10: Phase 6 (strategy library)
+**Built:**
+- `strategies/base.py`:
+  - `Strategy` (pure `transform(messages, TaskSpec) -> TransformResult`) and `StrategyInfo` (id, version, kind,
+    description, intended use, limitations, categories, `general_safe`, evidence note);
+  - `content_hash` over the metadata and every template, so changed wording needs a new version.
+- `strategies/builtin.py`: eight v1 strategies.
+  - `identity`.
+  - Additive: `concise_directive`, `role_framing`, `stepwise_plan`, `output_schema`, `security_generic`.
+  - Structural: `structured_sections`, `requirements_checklist`.
+
+  Additive strategies put the harness instruction first, as its own system message. Structural ones wrap or
+  append around the user's text. **None paraphrases the user's text.**
+- `strategies/registry.py`: lookup by id and version; `candidates(spec)` returns the applicable strategies with
+  identity first, and only `general_safe` ones when the category is `general`. Re-registering an id and version
+  with different content is refused.
+- The policy that chooses among candidates is Phase 10; the transformation engine and preservation check are
+  Phase 8. Nothing calls the strategies on the request path yet.
+
+**Deferred, with reasons:**
+- `security_targeted` needs a CWE knowledge base. LeBlanc's cannot be reused (no licence) and writing a new one
+  is a separate piece of work.
+- `few_shot_from_library` needs a curated example library kept separate from every evaluation split.
+- `minimal_context` and `llm_rewrite` are rewriting strategies; they come after Phase 8's preservation gate (D7).
+
+**Tests:**
+- Every built-in strategy is applied to every one of the 320 dataset prompts where it is applicable. Checked
+  each time: the user's text appears verbatim, the user's own system message is unchanged, the last message is
+  still from the user, and everything the strategy added is visible.
+- Also tested: identity is a no-op, candidate rules, unique ids and hashes, and refusal of changed content under
+  an existing version.
+- 109 unique offline tests pass; ruff and mypy --strict are clean.
+
+**Observation (local Ollama):** the first call to `qwen2.5vl:3b` timed out three times at the 120 s default while
+the model loaded cold on an 8 GB Mac, with a large download running at the same time. A direct call then took
+23 s, and the harness call 10 s. The default was not changed; the docs tell users to raise
+`HTTPConfig.timeout_s` for large local models.
 
 ## Known issues / open questions
 - OpenAI and Anthropic chat calls cannot be completed until those accounts have credit. Their adapters are

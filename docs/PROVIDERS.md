@@ -13,7 +13,7 @@ Paid providers are not called live unless strictly necessary (project rule: free
 |---|---|---|---|---|
 | Groq | `openai_compatible` preset `groq` | yes | **yes**, 2026-11-10, `openai/gpt-oss-20b` | Free tier. Reports reasoning tokens and `system_fingerprint` |
 | Google Gemini | native `gemini` | yes | **yes**, 2026-11-10, `gemini-3.5-flash-lite` | Free tier. `models.get` exposes context window, version and thinking support |
-| Ollama (local) | `openai_compatible` preset `ollama` | yes | see DEVLOG for the run after the model download | Free, no key. `/api/show` gives family, size, quantisation |
+| Ollama (local) | `openai_compatible` preset `ollama` | yes | **yes**, 2026-11-10, `qwen2.5vl:3b` (the `qwen2.5-coder:7b` download was interrupted by the network and is resuming) | Free, no key. `/api/show` gave family, 3.8B parameters, Q4_K_M quantisation, 128,000 context. A cold model load on an 8 GB Mac exceeded the 120 s default timeout once; raise `HTTPConfig.timeout_s` for large local models |
 | Ollama cloud | `openai_compatible` preset `ollama_cloud` | yes | **reached, not completed**: model listing works; chat returns HTTP 402 "add usage credits" | Not free for this account. Mapped to `QuotaExceededError` |
 | OpenAI | `openai_compatible` preset `openai` | yes | **reached, not completed** (2026-11-10): models listing works; chat returns HTTP 429 "no credits remaining" | Account has no credit. Mapped to `QuotaExceededError`. Uses `max_completion_tokens` |
 | OpenRouter | `openai_compatible` preset `openrouter` | yes | **yes**, 2026-11-10, `openai/gpt-oss-20b`, cost $0.0000066 | Reports per-call cost and serving host (DeepInfra) |

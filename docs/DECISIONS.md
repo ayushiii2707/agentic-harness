@@ -72,3 +72,15 @@ approval; "Decided" entries were made by the owner or follow from their instruct
   changed lexicon needs a new taxonomy version and a fresh test set.
 - **D22.** The task-classification set is author-written (no suitable public set matches the taxonomy). This
   limitation is stated in every report that uses it.
+
+## 2026-11-10 (Phase 6)
+
+- **D23.** Additive strategies add their instruction as a separate, first system message rather than editing the
+  user's system message or turns. The user's content stays byte-identical and separate from harness text
+  (DESIGN §5.4).
+- **D24.** `security_generic` uses exactly the sentence LeBlanc v4 tested ("Write secure code and avoid common
+  security vulnerabilities."), so LeBlanc's results can serve as prior evidence for this strategy (DESIGN §6.6),
+  and only for the models and task family LeBlanc tested. The sentence is a generic phrase; no LeBlanc code or
+  data is copied.
+- **D25.** `security_targeted` and `few_shot_from_library` are deferred (no licensed knowledge base or curated
+  example library yet), and rewriting strategies wait for Phase 8.
