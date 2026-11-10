@@ -159,3 +159,11 @@ approval; "Decided" entries were made by the owner or follow from their instruct
 - **D45.** Tool definitions pass through unchanged (`extra=`); only the model's tool *calls* are normalised.
   *Reason:* a cross-provider tool-conversation abstraction is a large surface that no current requirement needs.
 - **D46.** Evaluation details follow `prompt_storage`, like trace notes (D40).
+- **D47.** LLM classifier labels are persisted in the store (`classification_cache`, migration 0002), keyed by
+  prompt hash, classifier model and taxonomy version. *Reason:* an in-memory cache let a new process label the
+  same prompt differently, so calibration evidence could be filed under a category the server would never look
+  up. Failed calls are not stored.
+- **D48.** A 429 whose body says "rate limit reached" or "try again in" is a `RateLimitError` (retried), even if it
+  also mentions billing. Account and organization IDs in provider error messages are masked. *Reason:* live
+  calibration on Groq stopped on a tokens-per-minute limit that was mapped to a terminal quota error, and the
+  error text carried the account's organization ID.
