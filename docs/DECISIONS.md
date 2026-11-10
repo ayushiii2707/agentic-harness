@@ -167,3 +167,26 @@ approval; "Decided" entries were made by the owner or follow from their instruct
   also mentions billing. Account and organization IDs in provider error messages are masked. *Reason:* live
   calibration on Groq stopped on a tokens-per-minute limit that was mapped to a terminal quota error, and the
   error text carried the account's organization ID.
+
+## 2026-11-10 (fixes for the independent evaluation, docs/reports/evaluation_2026-11-10.md)
+
+- **D49 (F2).** The fingerprint names the model only (`model_reported`, `model_version`); a serving-host change
+  is a fact. *Reason:* host switches on routers marked profiles stale and disabled learning for good.
+- **D50 (F2).** Drift marks the profile stale *and* starts the next profile version at once. *Reason:* waiting
+  for a manual recalibration left learning off indefinitely.
+- **D51 (F3).** Default exploration is 10% of checked calls, and only while a candidate in the cell has fewer
+  than 60 decayed outcomes. Automatic calibration is on by default for real local providers only. *Reason:* the
+  master prompt requires learning to be automatic, without spending money by default; with these defaults,
+  exploration stops by itself once the comparison has data.
+- **D52 (F7).** Task analysis uses substring pre-checks (identical results) and classifies long prompts on their
+  first 6,000 and last 2,000 characters. Requirement extraction still reads everything.
+- **D53 (F1).** A hosted provider needs a positive per-call reservation, in calibration and in every auxiliary
+  call. *Reason:* a $0 reservation always fits the budget, so a provider that reports no cost could spend without
+  limit.
+- **D54 (F4, F5).** Migration 0003: `trial.profile_id`, and `evaluation.counted` with a unique partial index.
+  The database decides atomically which outcome counts.
+- **D55 (F8).** Explicit config wins over the environment, and `.env` is read only inside the project.
+- **D56 (F9).** An import that the sandbox cannot satisfy is a model failure by default
+  (`UnitTests.missing_module_is_env_error` to opt out). `UnitTests` version 2.
+- **D57 (F11).** Two-way tool messages: a `tool` role, `tool_calls` on assistant messages, and Gemini's
+  `thoughtSignature` carried on `ToolCall` and sent back unchanged.

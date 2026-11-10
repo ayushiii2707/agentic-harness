@@ -18,7 +18,10 @@
 - **LLM rewriter with an independent judge:** done.
 - **Phase 10, evidence decay, backoff, priors, drift and the cost term:** done.
 - **Review of Phases 1–10:** done (`docs/reports/review_phases_1_10.md`).
-- **Phase 11, orchestration, plus the known-limits pass:** done. **Awaiting approval for Phase 12.**
+- **Phase 11, orchestration, plus the known-limits pass:** done.
+- **Independent evaluation and fixes F1–F16:** done (`docs/reports/evaluation_2026-11-10.md`,
+  `docs/reports/reevaluation_2026-11-10.md`). F13 needs the owner to delete two leftover files.
+  **Awaiting approval for Phase 12.**
 - Not implemented yet: Phases 12–13.
 
 ## 2026-11-09 to 2026-11-10: Phase 0
@@ -478,3 +481,13 @@ trace notes). Everything else was verified as described there.
     carried the account's organization ID (D48);
   - LLM labels were only cached in memory (D47). After the fix, no task was filed under two categories across the
     resume.
+
+## 2026-11-10: Independent evaluation, fixes and re-evaluation
+- **Method.** gstack's review methods (`/review`, `/plan-eng-review`, `/qa-only`, `/test-audit`, `/cso`) were
+  applied by hand; the skills were not installed. 28 probes ran against an isolated copy.
+- **Findings.** 13 confirmed defects (1 Critical, 2 High) plus low-severity items and risks; see the evaluation
+  report.
+- **Fixes.** All fixed except F13 (owner action), each with a regression test (D49–D57).
+- **Re-evaluation.** Every original probe re-run passes. One new defect was found live (the Gemini
+  `thoughtSignature`) and fixed.
+- **Tests.** 283 pass; ruff and mypy clean.

@@ -121,6 +121,12 @@ step would add cost, non-determinism and an injection surface.
 
 - **Fingerprint.** A hash of (resolved_version, quantisation, serving host) where these are available. When the
   fingerprint changes, the profile is marked `stale` (section 6.7). It is not silently reused.
+
+  *As implemented (revised after the evaluation, D49):* the fingerprint covers only fields that name the model
+  (`model_reported`, `model_version`). A changed serving host (e.g. an OpenRouter backend) is recorded as a fact,
+  not as a model change: routers switch hosts between calls, and treating that as a new model disabled learning
+  for good. A behaviour change caused by a host is caught by drift detection, which is evidence-based. A new
+  reported version still starts a new model row and profile.
 - No external call is made to identify a local model; Ollama, vLLM and LM Studio expose their metadata locally.
 
 ### 5.2 Task Understanding (`tasks/`)
@@ -371,20 +377,40 @@ the host.
   event. Exploration happens only when a check is given, as for `generate`.
 - **Async.** `achat`/`agenerate` run planning, which may call a rewriter, judge or classifier, and the check in a
   worker thread.
-- **Tools.** `extra=` passes provider-native options (e.g. `tools`, `tool_choice`, `response_format`) unchanged.
-  Responses expose `tool_calls` (`ToolCall(name, arguments_json, id)`), normalised for OpenAI-compatible,
-  Anthropic and Gemini. Sending tool *results* back stays provider-specific; it is not abstracted.
-- **Automatic calibration** (`CalibrationConfig.auto`, off by default):
+- **Tools.**
+  - `extra=` passes provider-native tool definitions and options (e.g. `tools`, `tool_choice`,
+    `response_format`) unchanged.
+  - Responses expose `tool_calls` (`ToolCall(name, arguments_json, id)`), normalised for OpenAI-compatible,
+    Anthropic and Gemini.
+  - Tool results go back as `Message("tool", ..., tool_call_id=..., name=...)`, and an assistant message carries
+    its `tool_calls`. Each adapter maps these to its own format, including Gemini's `thoughtSignature`, which
+    thinking models require.
+  - Live round trips verified on Groq and Gemini (2026-11-10). Anthropic is contract-tested only.
+- **Automatic calibration** (`CalibrationConfig.auto`):
+  - The default `None` means on for real local providers (free) and off for hosted ones. `True` allows hosted
+    providers; `False` turns it off.
   - A `cold` or `stale` profile is calibrated on a background thread.
-  - A local provider needs nothing else.
-  - A paid provider also needs `max_cost_per_call_usd > 0` and harness budget, and every call is reserved first.
+  - A hosted provider also needs `max_cost_per_call_usd > 0` and harness budget, and every call is reserved first.
   - At most one run at a time, and at most one start per `min_interval_s`.
+  - `close()` cancels a running calibration before its next call; it can be resumed.
 - **Privacy.** Evaluation details (which can quote the response) follow `prompt_storage`. With `"none"`, only the
   diagnosis before the first colon is stored.
 - **Overhead (O5), measured** (`scripts/bench_overhead.py`, mock model, evidence for every arm):
-  - 0.8 ms p50 per call and 1.6 ms with a check; profile lookup 0.03 ms.
+  - Short prompt: 0.5 ms p50 per call and 1.0 ms with a check; profile lookup 0.03 ms.
   - Before Phase 11 the policy's Monte-Carlo comparison made this 20 ms. The exact integral, a cache and a
     normal-approximation screen (which can only keep identity) removed that.
+  - **Overhead grows with prompt length**, because task analysis reads the text. `analyze()`, after the
+    evaluation fixes (D52), takes:
+
+    | prompt size | time |
+    |---|---|
+    | 2 KB | 2.5 ms |
+    | 10 KB | 16 ms |
+    | 100 KB | 56 ms |
+    | 400 KB | 0.2 s |
+
+  - O5 (< 5 ms) therefore holds for prompts up to about 3 KB. Above that, requirement extraction (which must
+    read every character for the preservation guard) dominates.
 
 ## 6. Algorithms
 
@@ -448,8 +474,10 @@ The penalty is never negative: a cheaper strategy still has to beat identity by 
      (default 0.02).
    - Otherwise send `identity`.
    - The cost term of §6.3 raises the margin for strategies that use more tokens (Phase 10).
-3. **Exploration** (opt-in, `PolicyConfig.exploration_rate`):
+3. **Exploration** (`PolicyConfig.exploration_rate`, default 0.1 since the evaluation, D51):
    - Only on calls whose outcome will be observed (the caller passed `check=`); never otherwise (principle 3).
+   - Only while some candidate in the cell has fewer than `exploration_target` (default 60) decayed outcomes.
+     Exploration stops by itself once the comparison has data, and reopens when decay or drift erodes it.
    - With probability `exploration_rate`, the strategy is drawn **uniformly** among the candidates, identity
      included.
 4. Below-threshold confidence in the task category → the candidate set shrinks to `identity` plus strategies
@@ -560,6 +588,10 @@ Three triggers mark a profile `stale` and schedule recalibration, within budget:
 
 A stale profile keeps serving (decayed estimates are still informative) but **stops exploiting non-identity
 strategies whose advantage depended on the decayed evidence**, until recalibrated.
+
+*As implemented (revised after the evaluation, D50):* when drift is detected, the profile is marked `stale` and a
+new profile version starts at once, with no evidence. Learning then resumes online, or through calibration,
+without waiting for someone to recalibrate. The stale version is kept for audit.
 
 **As implemented (Phase 10, `learning/drift.py`):**
 - Trigger 1 (fingerprint) was implemented in Phase 4. Trigger 3 (age) is covered by decay and the `n_eff` gate.
@@ -861,7 +893,7 @@ before the next one starts.**
 | 8 Transformation | Engine, delimiters, preservation, fallback, traces | `transform/*` | golden, adversarial, property | 0 requirement drops on the adversarial set for v1 kinds; every failure path → identity | False positives in the contradiction check |
 | 9 Evaluation | Typed states, code / format / constraint / reference evaluators, Docker sandbox + self-test, optional scanners, opt-in judge | `evaluation/* sandbox/*` | unit, sandbox | Sandbox self-test passes on macOS and Linux; infra failure → `evaluation_error` (tested); forged-result test detected | Docker availability; image size |
 | 10 Adaptive learning | Posterior updates, decay, policy rule, drift, recalibration scheduling | `learning/*` | simulation | False switch to a worse arm < 5%; drift detected within the configured window; **labelled simulated** | Hard-to-tune thresholds |
-| 11 Orchestration | Wire everything; background evaluation; streaming; tools pass-through | `orchestrator.py api.py` | e2e mock + Ollama | `generate()` runs the full path; evaluation failure never loses a response; overhead target O5 met | Async complexity |
+| 11 Orchestration | Wire everything; background evaluation; streaming; tools pass-through | `orchestrator.py api.py` | e2e mock + Ollama | `generate()` runs the full path; evaluation failure never loses a response; overhead target O5 met (as measured: for prompts up to ~3 KB, §5.8) | Async complexity |
 | 12 Validation | Pre-registered experiment, A–D + ablations | `experiments/*` | — | Pre-registration committed before data; all results traceable to trials; nulls reported | Budget, model availability, small effects |
 | 13 Release | Packaging, docs, CI, licence review, clean install | repo-wide | install tests on 3.10–3.13 | Clean-venv install and quickstart; **no publish without your approval** | Package-name availability |
 

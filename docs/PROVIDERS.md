@@ -21,9 +21,14 @@ Paid providers are not called live unless strictly necessary (project rule: free
 | vLLM, LM Studio | `openai_compatible` presets | yes | no (no local server) | |
 | Anthropic | native `anthropic` (Messages API, version `2026-10-21`) | yes | **reached, not completed** (2026-11-10): models listing works; chat returns HTTP 400 "credit balance is too low" | Account has no credit. Mapped to `QuotaExceededError`. `temperature`/`top_p` are not accepted by this API version; they are dropped and recorded in `dropped_settings` |
 
-**Tool calls** (Phase 11): pass provider-native tool definitions with `extra={"tools": ...}`. The model's tool
-calls come back as `HarnessResponse.tool_calls`, normalised for OpenAI-compatible (`message.tool_calls`), Anthropic
-(`tool_use` blocks) and Gemini (`functionCall` parts). This is contract-tested on synthetic bodies only, not live.
+**Tool calls**:
+- Pass provider-native tool definitions with `extra={"tools": ...}`. The model's tool calls come back as
+  `HarnessResponse.tool_calls`.
+- Send results back with `role="tool"` messages.
+- Live round trips (call, result, answer) verified on 2026-11-10 on Groq `openai/gpt-oss-20b` and Gemini
+  `gemini-3.5-flash-lite`. The Gemini run found that thinking models need their `thoughtSignature` sent back; this
+  is fixed.
+- Anthropic: contract-tested only (no credit).
 
 ## Free model availability (checked 2026-11-10, listing calls only)
 

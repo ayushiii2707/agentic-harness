@@ -41,11 +41,18 @@ print(r.trace)    # category, strategy used, and why
 The harness only learns from **real outcomes**: a check you supply, or feedback you report. Without them it never
 counts an answer as a success or failure, and it keeps sending your original prompt.
 
-```python
-from adaptive_harness import AdaptiveHarness, HarnessConfig, PolicyConfig
+By default:
+- **Checked calls.** On 10% of calls with a check, it tries another strategy, but only while the comparison still
+  lacks data. It stops once every candidate has about 60 outcomes.
+- **Local models.** A new local model (Ollama, vLLM, LM Studio) is calibrated automatically in the background, for
+  free.
+- **Hosted providers.** Calibration costs money there, so it only runs if you allow it, with a per-call cap and a
+  budget.
 
-cfg = HarnessConfig(policy=PolicyConfig(exploration_rate=0.2))  # try other strategies on 20% of checked calls
-h = AdaptiveHarness(provider="groq", model="openai/gpt-oss-20b", config=cfg)
+```python
+from adaptive_harness import AdaptiveHarness
+
+h = AdaptiveHarness(provider="groq", model="openai/gpt-oss-20b")
 
 r = h.generate("What is 17 * 23? End with the number only.", check=lambda text: text.strip().endswith("391"))
 r = h.generate("Summarise this release note ...")
@@ -67,13 +74,19 @@ h.flush()                                                     # wait for backgro
 for event in h.stream(prompt, check=my_check):                # streaming; the check runs on the full text
     print(event.delta, end="")
 
-r = h.generate("Weather in Oslo?", extra={"tools": [...]})    # provider-native options pass through unchanged
-r.tool_calls                                                  # normalised: name, arguments (JSON), id
+r = h.chat(messages, extra={"tools": [...]})   # provider-native tool definitions pass through unchanged
+call = r.tool_calls[0]                           # normalised: name, arguments (JSON), id
+messages += [{"role": "assistant", "content": r.text, "tool_calls": [call]},
+             {"role": "tool", "tool_call_id": call.id, "name": call.name, "content": '{"temp_c": 4}'}]
+r = h.chat(messages, extra={"tools": [...]})   # the model answers using the tool result
 ```
 
-Opt-in features (all off by default):
-- `CalibrationConfig(auto=True)` calibrates a new or stale profile in the background. It is free for local
-  models; a paid provider needs a per-call cap and a budget.
+Configuration you pass in code always wins. Environment variables and a `.env` file apply only when you pass no
+config, and `.env` is read only inside your project (up to the folder with `.git` or `pyproject.toml`).
+
+Opt-in features:
+- `CalibrationConfig(auto=True, max_cost_per_call_usd=..., ...)` with a budget also calibrates hosted models.
+  `auto=False` turns automatic calibration off everywhere.
 - `ClassifierConfig(provider, model)` lets an LLM label prompts that the built-in classifier calls `general`.
 - `RewriterConfig(...)` enables the LLM rewriter. An independent judge must confirm every rewrite.
 
