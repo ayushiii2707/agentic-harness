@@ -181,3 +181,48 @@ class UnitTests:
         return EvaluationResult(
             EvalStatus.ERROR, self.evaluator_id, self.version, details=f"{r.status}: {r.detail}"
         )
+
+
+@dataclass(frozen=True)
+class BulletConstraints:
+    """Instruction following, checked exactly.
+
+    The answer must be exactly ``n_bullets`` lines starting with "- ", then one final line equal to ``last_line``,
+    and nothing else. Each bullet has exactly ``exact_words`` words (whitespace-separated, after "- "). Each
+    ``(word, i)`` in ``placed`` must appear in bullet number i (1-based, whole word, any case). No word in
+    ``must_avoid`` may appear anywhere.
+    """
+
+    n_bullets: int
+    exact_words: int
+    placed: tuple[tuple[str, int], ...] = ()
+    must_avoid: tuple[str, ...] = ()
+    last_line: str = "END"
+    evaluator_id: str = "bullet_constraints"
+    version: str = "2"
+
+    def evaluate(self, text: str) -> EvaluationResult:
+        lines = [ln.rstrip() for ln in (text or "").strip().splitlines() if ln.strip()]
+        problems = []
+        if not lines or lines[-1].strip() != self.last_line:
+            problems.append("last line")
+        bullets = lines[:-1] if lines else []
+        if len(bullets) != self.n_bullets or not all(b.startswith("- ") for b in bullets):
+            problems.append(f"bullets {len(bullets)}/{self.n_bullets}")
+        if any(len(b[2:].split()) != self.exact_words for b in bullets):
+            problems.append("word count")
+
+        def has(word: str, text: str) -> bool:
+            pattern = r"(?<![a-z0-9])" + re.escape(word.lower()) + r"(?![a-z0-9])"
+            return re.search(pattern, text.lower()) is not None
+
+        for word, i in self.placed:
+            if not (0 < i <= len(bullets) and has(word, bullets[i - 1])):
+                problems.append(f"placement {word}")
+        problems += [f"forbidden {w}" for w in self.must_avoid if has(w, text or "")]
+        return EvaluationResult(
+            EvalStatus.FAILURE if problems else EvalStatus.SUCCESS,
+            self.evaluator_id,
+            self.version,
+            details="; ".join(problems),
+        )

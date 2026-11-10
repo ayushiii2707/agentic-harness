@@ -3,6 +3,9 @@
 - ``math``: generated multi-step word problems with computed answers (ReferenceAnswer).
 - ``structured_output``: generated extraction tasks with exact expected field values (JsonFields).
 - ``code_generation``: hand-written function tasks with unit tests run in the Docker sandbox (UnitTests).
+- ``instructions``: generated instruction-following tasks with several exact constraints (BulletConstraints).
+  Harder than the other suites on purpose: strong models reach ceiling on math and extraction, and a suite at
+  ceiling cannot tell strategies apart.
 
 Generated suites take a ``split``: ``calibration`` (used to learn) and ``heldout`` (reserved for Phase 12) come
 from disjoint seeds, so the evaluation of a learned profile never reuses the tasks it was learned on.
@@ -15,7 +18,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 from ..evaluation import Evaluator
-from ..evaluation.builtin import JsonFields, ReferenceAnswer, UnitTests
+from ..evaluation.builtin import BulletConstraints, JsonFields, ReferenceAnswer, UnitTests
 
 Split = Literal["calibration", "heldout"]
 SUITE_VERSION = "1"
@@ -215,11 +218,53 @@ def code_suite() -> list[CalibrationTask]:
     return out
 
 
+# ------------------------------------------------------------------ instruction following
+_TOPICS = {
+    "cycling to work": ["helmet", "route", "commute", "traffic", "fitness", "weather"],
+    "learning a new language": ["vocabulary", "practice", "grammar", "listening", "habit", "mistakes"],
+    "saving money on groceries": ["budget", "list", "discount", "season", "bulk", "waste"],
+    "writing a cover letter": ["company", "achievement", "tone", "role", "proofread", "evidence"],
+    "running a team meeting": ["agenda", "decision", "timebox", "notes", "owner", "follow-up"],
+    "keeping houseplants alive": ["light", "watering", "drainage", "humidity", "soil", "pests"],
+    "preparing for a job interview": ["research", "questions", "examples", "posture", "salary", "rehearse"],
+    "reducing screen time": ["notifications", "bedtime", "boundaries", "hobbies", "tracking", "walks"],
+}
+_AVOID = ["very", "really", "important", "always", "just", "make", "good", "time"]
+
+
+def instructions_suite(n: int = 60, split: Split = "calibration") -> list[CalibrationTask]:
+    rng = random.Random(_SEEDS[split] + 2)
+    banned = _excluded(split, instructions_suite)
+    out: list[CalibrationTask] = []
+    seen: set[str] = set()
+    while len(out) < n:
+        topic = rng.choice(sorted(_TOPICS))
+        k, words = rng.randint(3, 5), rng.randint(6, 9)
+        w1, w2 = rng.sample(_TOPICS[topic], 2)
+        i1, i2 = rng.sample(range(1, k + 1), 2)
+        avoid = rng.choice(_AVOID)
+        end = rng.choice(["END", "DONE"])
+        prompt = (
+            f"Write tips about {topic}. Rules: give exactly {k} bullet points, each on its own line starting with "
+            f'"- "; every bullet has exactly {words} words; bullet {i1} must contain the word "{w1}" and bullet '
+            f'{i2} the word "{w2}"; never use the word "{avoid}"; after the bullets write one final line '
+            f"containing only {end}. Output nothing else."
+        )
+        if prompt in banned or prompt in seen:
+            continue
+        seen.add(prompt)
+        check = BulletConstraints(k, words, ((w1, i1), (w2, i2)), (avoid,), end)
+        out.append(CalibrationTask(f"instr-{split}-{len(out):03d}", "content_generation", prompt, check))
+    return out
+
+
 def suite(category: str, split: Split = "calibration") -> list[CalibrationTask]:
     if category == "math":
         return math_suite(split=split)
     if category == "structured_output":
         return json_suite(split=split)
+    if category == "instructions":
+        return instructions_suite(split=split)
     if category == "code_generation":
         if split != "calibration":
             raise ValueError("the code suite has no held-out split yet")
@@ -227,4 +272,4 @@ def suite(category: str, split: Split = "calibration") -> list[CalibrationTask]:
     raise ValueError(f"no calibration suite for category {category!r}")
 
 
-SUITE_CATEGORIES = ("math", "structured_output", "code_generation")
+SUITE_CATEGORIES = ("math", "structured_output", "instructions", "code_generation")
