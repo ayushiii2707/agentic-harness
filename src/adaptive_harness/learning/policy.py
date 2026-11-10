@@ -76,7 +76,8 @@ class Policy:
         base = self._arm(identity, arms)
         if base.n_trials < self.config.min_trials:
             return Decision(
-                identity, f"identity: baseline has {base.n_trials} < {self.config.min_trials} evaluated outcomes"
+                identity,
+                f"identity: baseline has {base.n_trials} < {self.config.min_trials} evaluated outcomes",
             )
         required = 1.0 - (1.0 - self.config.confidence) / len(others)
         best_p, best = 0.0, None

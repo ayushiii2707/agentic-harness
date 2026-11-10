@@ -85,7 +85,7 @@ class PolicyConfig:
 
     exploration_rate: float = 0.0  # share of *checked* calls that try a uniformly random candidate strategy
     min_gain: float = 0.02  # a strategy must beat identity by at least this success-rate margin...
-    confidence: float = 0.90  # ...with at least this posterior probability (Bonferroni-corrected per challenger)
+    confidence: float = 0.90  # ...with this posterior probability (Bonferroni-corrected)
     min_trials: int = 30  # evaluated outcomes needed for both identity and the challenger before comparing
     mc_samples: int = 2000
 
