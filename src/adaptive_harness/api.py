@@ -27,7 +27,7 @@ from .config import HarnessConfig
 from .errors import StoreError
 from .evaluation import Check, EvalStatus, EvaluationResult, feedback_result, run_check
 from .hashing import text_hash
-from .learning import EvidenceStore, Policy
+from .learning import Decision, EvidenceStore, Policy
 from .models import ModelKey, ModelRegistry, deployment_for
 from .providers.base import ModelInfo, ProviderAdapter
 from .providers.registry import create_adapter
@@ -81,6 +81,8 @@ class _Plan:
     strategy: Strategy
     spec: TaskSpec | None
     trace: Trace
+    experiment_id: str | None = None
+    task_ref: str | None = None
 
 
 def _preserves(original: Sequence[Message], new: Sequence[Message]) -> bool:
@@ -145,6 +147,12 @@ class AdaptiveHarness:
                 )
                 self.models = ModelRegistry(self.store)
                 self.evidence = EvidenceStore(self.store)
+                for key in self.strategies.sync_with_store(self.store):
+                    log.warning(
+                        "strategy %s changed its wording without a new version; it is disabled because its stored "
+                        "evidence describes the old wording (bump the strategy's version to use it)",
+                        key,
+                    )
             except StoreError as e:  # never block the user's call because the store is unavailable
                 log.warning("evidence store unavailable, running stateless: %s", e)
                 self.store = self.models = self.evidence = self.ledger = None
@@ -179,6 +187,33 @@ class AdaptiveHarness:
         trial_id = uuid.uuid4().hex
         try:
             result = await self.adapter.acomplete(plan.sent)
+        except Exception as e:
+            self._record(trial_id, plan, None, error=e)
+            raise
+        return self._finish(trial_id, plan, result, check)
+
+    def run_trial(
+        self,
+        prompt: str,
+        *,
+        strategy: Strategy,
+        check: Check,
+        experiment_id: str,
+        task_ref: str,
+        **settings: Any,
+    ) -> HarnessResponse:
+        """One experiment call with a fixed strategy (used by calibration).
+
+        It goes through the same task analysis, transformation guard, trial record, evaluation and evidence
+        update as ``generate``; only the choice of strategy is fixed by the experiment. In particular the
+        evidence is keyed by the category the classifier assigns, exactly as it will be looked up later
+        (no training/serving skew; see docs/DECISIONS.md D29).
+        """
+        plan = self._plan(self._messages(prompt, None), settings, can_explore=False, forced=strategy)
+        plan = replace(plan, experiment_id=experiment_id, task_ref=task_ref)
+        trial_id = uuid.uuid4().hex
+        try:
+            result = self.adapter.complete(plan.sent)
         except Exception as e:
             self._record(trial_id, plan, None, error=e)
             raise
@@ -284,7 +319,10 @@ class AdaptiveHarness:
         settings: Mapping[str, Any],
         *,
         can_explore: bool,
+        forced: Strategy | None = None,
     ) -> _Plan:
+        """Build the request to send. ``forced`` is used by calibration only: the strategy is fixed by the
+        experiment instead of chosen by the policy. Everything else is identical to a normal call."""
         known = {"max_tokens", "temperature", "top_p", "stop", "seed"}
         unknown = set(settings) - known
         if unknown:
@@ -317,19 +355,22 @@ class AdaptiveHarness:
         except Exception as e:  # task understanding must never block the call
             log.warning("task analysis failed: %s", e)
             return passthrough("identity: task analysis failed", notes=("task analysis failed",))
-        if not self.config.optimize:
+        if not self.config.optimize and forced is None:
             return passthrough("optimisation disabled (pass-through)", spec)
 
         try:
             candidates = self.strategies.candidates(spec)
-            profile_id, status = self._current_profile()
-            arms = self.evidence.arms(profile_id, spec.category) if (self.evidence and profile_id) else {}
-            decision = self.policy.choose(
-                candidates,
-                arms,
-                can_explore=can_explore and self.evidence is not None,
-                exploit_allowed=profile_id is not None and status != "stale",
-            )
+            if forced is not None:
+                decision = Decision(forced, "calibration: strategy fixed by the experiment")
+            else:
+                profile_id, status = self._current_profile()
+                arms = self.evidence.arms(profile_id, spec.category) if (self.evidence and profile_id) else {}
+                decision = self.policy.choose(
+                    candidates,
+                    arms,
+                    can_explore=can_explore and self.evidence is not None,
+                    exploit_allowed=profile_id is not None and status != "stale",
+                )
         except Exception as e:
             log.warning("strategy choice failed: %s", e)
             return passthrough("identity: strategy choice failed", spec, ("strategy choice failed",))
@@ -447,14 +488,16 @@ class AdaptiveHarness:
                         obs.resolved_version,
                     )
             self.store.execute(
-                """INSERT INTO trial(id, model_ref, category_id, provider, model_requested, model_reported,
-                     strategy_id, strategy_version, settings_json, prompt_hash, original_prompt, transformed_prompt,
-                     response_text, finish_reason, input_tokens, output_tokens, reasoning_tokens, cost_usd,
-                     cost_is_estimated, latency_s, retries, fingerprint_json, dropped_settings, error, status,
-                     simulated, trace_json, created_at, finished_at)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+                """INSERT INTO trial(id, experiment_id, task_ref, model_ref, category_id, provider, model_requested,
+                     model_reported, strategy_id, strategy_version, settings_json, prompt_hash, original_prompt,
+                     transformed_prompt, response_text, finish_reason, input_tokens, output_tokens, reasoning_tokens,
+                     cost_usd, cost_is_estimated, latency_s, retries, fingerprint_json, dropped_settings, error,
+                     status, simulated, trace_json, created_at, finished_at)
+                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
                 (
                     trial_id,
+                    plan.experiment_id,
+                    plan.task_ref,
                     model_ref,
                     trace.category,
                     self.adapter.name,
