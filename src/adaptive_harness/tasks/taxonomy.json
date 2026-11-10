@@ -304,7 +304,8 @@
       },
       "patterns": {
         "\\d\\s*[+\\-*/^=]\\s*\\d": 1.5,
-        "\\bx\\s*[+\\-=^]|\\bx\\^\\d|\\d\\s*x\\b": 2
+        "\\bx\\s*[+\\-=^]|\\bx\\^\\d|\\d\\s*x\\b": 2,
+        "(?is)^(?=(?:.*?\\d){2,}).*\\bhow (?:many|much|long|far|old|fast)\\b": 2.5
       }
     },
     "structured_output": {

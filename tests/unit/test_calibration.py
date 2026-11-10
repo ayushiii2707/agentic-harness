@@ -60,14 +60,14 @@ def test_calibration_finds_the_better_strategy_and_the_request_path_uses_it(tmp_
     h = harness(tmp_path, math_model(p_role=0.9, p_other=0.4))
     report = Calibrator(h, max_calls=5000, max_cost_per_call_usd=0.0).run(categories=("math",))
     cells = {c.category: c for c in report.cells}
-    assert set(cells) == {"math", "general"}  # the math suite splits by the classifier's labels
+    assert set(cells) == {
+        "math"
+    }  # every suite prompt is labelled math (the word-problem rule, DECISIONS D41)
     math_arms = {a.strategy_id: a for a in cells["math"].arms}
     assert math_arms["role_framing"].mean > math_arms["identity"].mean + 0.25
     assert not math_arms["role_framing"].eliminated and not math_arms["identity"].eliminated
     assert any(a.eliminated for a in cells["math"].arms)  # clearly worse arms were dropped early
     assert cells["math"].usable
-    # in the general cell only identity applies, so calibration spends nothing there
-    assert cells["general"].stopped == "nothing to compare" and all(a.n == 0 for a in cells["general"].arms)
     assert (h.profile() or {})["status"] == "active"
 
     # The loop, checked on every held-out prompt (never seen in calibration), on the normal request path:
@@ -75,7 +75,9 @@ def test_calibration_finds_the_better_strategy_and_the_request_path_uses_it(tmp_
     # and nothing beats identity, so identity must be kept.
     for task in suite("math", split="heldout"):
         r = h.generate(task.prompt)
-        expected = {"math": "role_framing", "general": "identity"}[r.trace.category or ""]
+        expected = {"math": "role_framing", "general": "identity"}[
+            r.trace.category or ""
+        ]  # general: none expected
         assert r.trace.strategy_id == expected, (r.trace.category, r.trace.reason)
 
 

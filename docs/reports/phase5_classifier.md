@@ -6,7 +6,7 @@ Data: `data/task_classification/prompts.jsonl` (author-written; see its README f
 
 | split | n | accuracy | parent-accepted accuracy | coverage (not `general`) | accuracy when not `general` |
 |---|---|---|---|---|---|
-| dev (used for tuning) | 192 | 0.927 | 0.932 | 0.938 | 0.928 |
+| dev (used for tuning) | 192 | 0.938 | 0.943 | 0.943 | 0.934 |
 | **test (held out)** | 128 | 0.688 | 0.703 | 0.812 | 0.779 |
 
 ## Test: per category
