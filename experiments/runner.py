@@ -39,6 +39,7 @@ from adaptive_harness import (  # noqa: E402
     HTTPConfig,
     PersistenceConfig,
     PolicyConfig,
+    RewriterConfig,
 )
 from adaptive_harness._version import __version__  # noqa: E402
 from adaptive_harness.calibration.suites import (  # noqa: E402
@@ -51,9 +52,13 @@ from adaptive_harness.calibration.suites import (  # noqa: E402
     math_suite,
 )
 from adaptive_harness.errors import BudgetExceededError, ProviderError  # noqa: E402
+from adaptive_harness.evaluation.builtin import JsonFields, ReferenceAnswer  # noqa: E402
 from adaptive_harness.hashing import canonical_hash  # noqa: E402
 from adaptive_harness.learning import ArmStats, Policy  # noqa: E402
 from adaptive_harness.providers.base import ProviderAdapter  # noqa: E402
+from adaptive_harness.strategies import Strategy, StrategyRegistry  # noqa: E402
+from adaptive_harness.strategies.few_shot import build_few_shot  # noqa: E402
+from adaptive_harness.tasks import TaskAnalyzer  # noqa: E402
 
 CONDITIONS = ("A", "B", "B+", "C", "D")
 
@@ -87,9 +92,15 @@ def suite_tasks(name: str, split: str, n: int) -> list[CalibrationTask]:
         if split != "heldout":
             raise ValueError("code_generation is a held-out category only")
         return code_suite()[:n]
-    if split not in ("calibration", "heldout"):
+    splits: dict[str, Split] = {
+        "calibration": "calibration",
+        "heldout": "heldout",
+        "examples": "examples",
+        "pilot": "pilot",
+    }
+    if split not in splits:
         raise ValueError(f"unknown split {split!r}")
-    sp: Split = "calibration" if split == "calibration" else "heldout"
+    sp = splits[split]
     if name == "math":
         return math_suite(split=sp)[:n]
     if name == "structured_output":
@@ -112,21 +123,57 @@ def check_no_leakage(cfg: dict[str, Any]) -> None:
 
 # ------------------------------------------------------------------ harness
 def make_harness(
-    cfg: dict[str, Any], entry: dict[str, Any], db: Path, adapter: ProviderAdapter | None = None
+    cfg: dict[str, Any],
+    entry: dict[str, Any],
+    db: Path,
+    adapter: ProviderAdapter | None = None,
+    aux_adapters: dict[str, ProviderAdapter] | None = None,
 ) -> AdaptiveHarness:
+    rw = cfg.get("rewriter")
     config = HarnessConfig(
-        persistence=PersistenceConfig(
-            path=db, prompt_storage="full"
-        ),  # our own synthetic tasks: keep everything
+        persistence=PersistenceConfig(path=db, prompt_storage="full"),  # our own synthetic tasks: keep all
         budget=BudgetConfig(total_usd=entry.get("budget_usd", cfg["bookkeeping"]["budget_usd"])),
         http=HTTPConfig(timeout_s=300.0, max_attempts=4, max_total_wait_s=180.0),
         policy=PolicyConfig(exploration_rate=0.0),  # frozen defaults otherwise (preregistration §4)
         calibration=CalibrationConfig(auto=False),
+        rewriter=RewriterConfig(**rw) if rw else None,
     )
-    options = {"extra_body": entry["extra_body"]} if entry.get("extra_body") and adapter is None else {}
+    options: dict[str, Any] = {}
+    if entry.get("extra_body") and adapter is None:
+        options["extra_body"] = entry["extra_body"]
+    registry = StrategyRegistry()
+    if cfg.get("few_shot"):
+        registry.register(few_shot_strategy(cfg["few_shot"]))
     return AdaptiveHarness(
-        provider=entry["provider"], model=entry["model"], config=config, adapter=adapter, **options
+        provider=entry["provider"],
+        model=entry["model"],
+        config=config,
+        adapter=adapter,
+        strategies=registry,
+        aux_adapters=aux_adapters,
+        **options,
     )
+
+
+def example_answer(task: CalibrationTask) -> str:
+    """The reference answer of an ``examples``-split task, in the form its prompt asks for."""
+    ev = task.evaluator
+    if isinstance(ev, ReferenceAnswer):
+        x = ev.expected
+        return f"{x:g}" if isinstance(x, float) else str(x)
+    if isinstance(ev, JsonFields):
+        return json.dumps(dict(ev.expected))
+    raise ValueError(f"no example answer for {type(ev).__name__}")
+
+
+def few_shot_strategy(fs: dict[str, Any]) -> Strategy:
+    """few_shot with ``k`` examples per suite from the disjoint ``examples`` split, keyed by predicted category."""
+    analyzer = TaskAnalyzer()
+    examples: dict[str, list[tuple[str, str]]] = {}
+    for s in fs["suites"]:
+        for t in suite_tasks(s, "examples", fs["k"]):
+            examples.setdefault(analyzer.analyze(t.prompt).category, []).append((t.prompt, example_answer(t)))
+    return build_few_shot(examples)
 
 
 def ensure_experiment(h: AdaptiveHarness, cfg: dict[str, Any], exp_id: str) -> None:
@@ -198,10 +245,19 @@ class Collector:
 
 
 # ------------------------------------------------------------------ phases
+def suites_for(cfg: dict[str, Any], entry: dict[str, Any], split: str) -> dict[str, int]:
+    """Suites (and task counts) for this model: all of the config's, or the model's own list (v2 pilot rule)."""
+    allowed = entry.get("suites")
+    sizes: dict[str, int] = cfg[split]
+    return {
+        s: n for s, n in sizes.items() if allowed is None or s in allowed or s in cfg["unseen_categories"]
+    }
+
+
 def calibrate(c: Collector) -> None:
     items = [
         (t, arm)
-        for s, n in c.cfg["calibration"].items()
+        for s, n in suites_for(c.cfg, c.entry, "calibration").items()
         for t in suite_tasks(s, "calibration", n)
         for arm in c.cfg["calibration_arms"]
     ]
@@ -256,7 +312,8 @@ def select(harnesses: dict[str, AdaptiveHarness], cfg: dict[str, Any], exp_id: s
     out: dict[str, Any] = {"experiment": exp_id, "created_at": time.time(), "models": {}}
     for key, h in harnesses.items():
         rows = calibration_rows(h, exp_id)
-        need = sum(cfg["calibration"].values()) * len(arms)
+        entry = harness_entry(cfg, key)
+        need = sum(suites_for(cfg, entry, "calibration").values()) * len(arms)
         if len(rows) < need:
             raise SystemExit(
                 f"{key}: calibration incomplete ({len(rows)}/{need} outcomes); run calibrate first"
@@ -264,9 +321,9 @@ def select(harnesses: dict[str, AdaptiveHarness], cfg: dict[str, Any], exp_id: s
         all_rows += rows
         c_strategy, c_reason = pooled_choice(rows, arms, h)
         d_map: dict[str, dict[str, str]] = {}
-        for s, n in cfg["heldout"].items():
+        for s, n in suites_for(cfg, entry, "heldout").items():
             for t in suite_tasks(s, "heldout", n):
-                p = h.preview(t.prompt, max_tokens=harness_entry(cfg, key)["max_tokens"])
+                p = h.preview(t.prompt, max_tokens=entry["max_tokens"])
                 d_map[t.id] = {
                     "strategy": p.trace.strategy_id,
                     "category": p.trace.category or "",
@@ -296,14 +353,38 @@ def strategies_for(selections: dict[str, Any], key: str, task_id: str) -> dict[s
 
 def evaluate(c: Collector, selections: dict[str, Any], key: str) -> None:
     items = []
-    for s, n in c.cfg["heldout"].items():
+    for s, n in suites_for(c.cfg, c.entry, "heldout").items():
         for t in suite_tasks(s, "heldout", n):
-            distinct = sorted(set(strategies_for(selections, key, t.id).values()))
+            chosen = set(strategies_for(selections, key, t.id).values())
+            if c.cfg.get("heldout_all_arms"):  # v2: every arm on every held-out task
+                chosen |= set(c.cfg["calibration_arms"])
+            distinct = sorted(chosen)
             for rep in range(1, c.cfg["repetitions"] + 1):
                 items += [(t, strat, rep) for strat in distinct]
     random.Random(c.cfg["order_seed"] + 1).shuffle(items)
     for t, strat, rep in items:
         c.trial(t, strat, f"ho:{t.id}:r{rep}:{strat}")
+
+
+def pilot(c: Collector) -> dict[str, tuple[int, int, bool]]:
+    """Identity on the pilot split; returns {suite: (successes, n, included)} by the pre-registered headroom rule."""
+    p = c.cfg["pilot"]
+    for s in p["suites"]:
+        for t in suite_tasks(s, "pilot", p["n"]):
+            c.trial(t, "identity", f"pilot:{t.id}:identity")
+    assert c.h.store is not None
+    rows = c.h.store.query(
+        """SELECT t.task_ref, e.score FROM trial t JOIN evaluation e ON e.trial_id = t.id AND e.counted = 1
+           WHERE t.experiment_id=? AND t.task_ref LIKE 'pilot:%'""",
+        (c.exp_id,),
+    )
+    by_task = {r["task_ref"].split(":")[1]: float(r["score"]) for r in rows}
+    out = {}
+    for s in p["suites"]:
+        scores = [by_task[t.id] for t in suite_tasks(s, "pilot", p["n"]) if t.id in by_task]
+        k = int(sum(scores))
+        out[s] = (k, len(scores), p["min_successes"] <= k <= p["max_successes"])
+    return out
 
 
 # ------------------------------------------------------------------ export
@@ -329,7 +410,9 @@ def export(h: AdaptiveHarness, key: str, exp_id: str, path: Path) -> int:
         w.writeheader()
         for r in rows:
             parts = r["task_ref"].split(":")
-            phase = "calibration" if parts[0] == "cal" else "heldout"
+            phase = {"cal": "calibration", "ho": "heldout", "pilot": "pilot"}[
+                parts[0]
+            ]  # never default to held-out
             task_id = parts[1]
             rep = parts[2][1:] if phase == "heldout" else "1"
             strategy = parts[-1]
@@ -356,15 +439,17 @@ def db_path(results: Path, key: str) -> Path:
 def main(argv: Sequence[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--config", default=str(ROOT / "experiments" / "config_v1.json"))
-    ap.add_argument("--phase", choices=["calibrate", "select", "evaluate", "export"], required=True)
+    ap.add_argument("--phase", choices=["pilot", "calibrate", "select", "evaluate", "export"], required=True)
     ap.add_argument(
         "--model", action="append", help="provider:model (repeatable; default: all in the config)"
     )
-    ap.add_argument("--results", default=str(ROOT / "experiments" / "results" / "v1"))
+    ap.add_argument("--results", help="default: experiments/results/<results_dir from the config>")
     a = ap.parse_args(argv)
     cfg = load_config(a.config)
     check_no_leakage(cfg)
-    results = Path(a.results)
+    results = (
+        Path(a.results) if a.results else ROOT / "experiments" / "results" / cfg.get("results_dir", "v1")
+    )
     exp_id = cfg["experiment"]
     keys = a.model or [f"{m['provider']}:{m['model']}" for m in cfg["models"]]
     harnesses = {k: make_harness(cfg, model_entry(cfg, k), db_path(results, k)) for k in keys}
@@ -385,7 +470,10 @@ def main(argv: Sequence[str] | None = None) -> int:
                 continue
             c = Collector(h, cfg, model_entry(cfg, k), exp_id)
             print(f"{k}: {a.phase} ({len(c.done)} trials already done)")
-            if a.phase == "calibrate":
+            if a.phase == "pilot":
+                for suite, (succ, n, inc) in pilot(c).items():
+                    print(f"{k}: pilot {suite}: identity {succ}/{n} -> {'INCLUDED' if inc else 'excluded'}")
+            elif a.phase == "calibrate":
                 calibrate(c)
             else:
                 evaluate(c, json.loads(sel_path.read_text(encoding="utf-8")), k)

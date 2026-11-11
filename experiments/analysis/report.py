@@ -67,6 +67,28 @@ def condition_table(
     return table
 
 
+def arm_table(
+    rows: Sequence[dict[str, str]], key: str
+) -> dict[tuple[str, str, int], dict[str, float | None]]:
+    """(suite, task_id, rep) -> assigned strategy -> outcome, for designs that run every arm on every task."""
+    table: dict[tuple[str, str, int], dict[str, float | None]] = defaultdict(dict)
+    for r in rows:
+        if r["phase"] == "heldout" and r["model"] == key:
+            table[(r["suite"], r["task_id"], int(r["rep"]))][r["strategy"]] = outcome(r)
+    return table
+
+
+def _arm_contrast(
+    table: dict[tuple[str, str, int], dict[str, float | None]],
+    arm: str,
+    suites: Sequence[str],
+    res: int,
+    seed: int,
+) -> dict[str, Any]:
+    full = {k: {"x": v.get(arm), "y": v.get("identity")} for k, v in table.items()}
+    return contrast(full, "x", "y", suites, res, seed)  # fmt: skip
+
+
 def contrast(
     table: dict[tuple[str, str, int], dict[str, float | None]],
     first: str,
@@ -208,6 +230,30 @@ def build(results: Path, cfg: dict[str, Any]) -> str:
             tag = " (held-out category)" if suite in cfg["unseen_categories"] else ""
             lines.append(f"| {suite}{tag} | {a} - {b} | {r['n']} | {pp(r['diff'])} | [{pp(r['lo'])}, {pp(r['hi'])}] | "
                          f"{r['q']:.3g} | {label(r, margin, False)} |")  # fmt: skip
+        if cfg.get("heldout_all_arms"):
+            arms = [a for a in cfg["calibration_arms"] if a != "identity"]
+            atab = arm_table(model_rows, key)
+            suites = [s for s in cfg["heldout"] if s not in cfg["unseen_categories"]]
+            fam = [_arm_contrast(atab, a, suites, res, seed) for a in arms]
+            for r, q in zip(fam, benjamini_hochberg([r["p"] for r in fam]), strict=True):
+                r["q"] = q
+            lines += ["", "### Arm family: every strategy against the original prompt, on held-out tasks "
+                      "(pre-registered; BH within the family)", "",
+                      "| strategy | pairs (tasks) | diff pp | 95% cluster-bootstrap CI | b / c | McNemar p | BH q | result |",
+                      "|---|---|---|---|---|---|---|---|"]  # fmt: skip
+            for a, r in zip(arms, fam, strict=True):
+                lines.append(f"| {a} | {r['n']} ({r['tasks']}) | {pp(r['diff'])} | [{pp(r['lo'])}, {pp(r['hi'])}] | "
+                             f"{r['b']} / {r['c']} | {r['p']:.3g} | {r['q']:.3g} | {label(r, margin, False)} |")  # fmt: skip
+            per_suite = [(s, a, _arm_contrast(atab, a, (s,), res, seed)) for s in suites for a in arms]
+            for (_, _, r), q in zip(
+                per_suite, benjamini_hochberg([r["p"] for _, _, r in per_suite]), strict=True
+            ):
+                r["q"] = q
+            lines += ["", "### Arm family per suite (secondary; BH within the family)", "",
+                      "| suite | strategy | pairs | diff pp | 95% CI | BH q | result |", "|---|---|---|---|---|---|---|"]  # fmt: skip
+            for s, a, r in per_suite:
+                lines.append(f"| {s} | {a} | {r['n']} | {pp(r['diff'])} | [{pp(r['lo'])}, {pp(r['hi'])}] | "
+                             f"{r['q']:.3g} | {label(r, margin, False)} |")  # fmt: skip
         held = [r for r in model_rows if r["phase"] == "heldout"]
         lines += ["", "### Cost (held-out, mean tokens per call)", "", "| condition | input | output | reasoning | vs A |",
                   "|---|---|---|---|---|"]  # fmt: skip
