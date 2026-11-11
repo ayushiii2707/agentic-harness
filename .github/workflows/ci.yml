@@ -1,0 +1,86 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: tests (Python ${{ matrix.python }}, ${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python: ["3.10", "3.11", "3.12", "3.13"]
+        include:
+          - os: macos-latest
+            python: "3.13"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Lint and format
+        run: |
+          ruff check src tests scripts experiments
+          ruff format --check src tests scripts experiments
+      - name: Types (mypy --strict)
+        run: mypy src
+      - name: Unit, contract and experiment tests (no network, no Docker)
+        run: python -m pytest -q tests/unit tests/contract tests/experiments
+
+  sandbox:
+    name: Docker sandbox tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install
+        run: python -m pip install -e ".[dev]"
+      - name: Pull the pinned sandbox image
+        run: docker pull "$(python -c 'from adaptive_harness.sandbox.docker import DEFAULT_IMAGE; print(DEFAULT_IMAGE)')"
+      - name: Sandbox tests (real containers; network disabled inside)
+        run: python -m pytest -q tests/sandbox -rs
+
+  package:
+    name: Build and clean install
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build wheel and sdist
+        run: |
+          python -m pip install build
+          python -m build
+      - name: Only the package ships in the wheel
+        run: |
+          python - <<'PY'
+          import glob, zipfile
+          names = zipfile.ZipFile(glob.glob("dist/*.whl")[0]).namelist()
+          bad = [n for n in names if not (n.startswith("adaptive_harness/") or ".dist-info/" in n)]
+          assert not bad, bad
+          print(len(names), "files, all inside adaptive_harness/")
+          PY
+      - name: Install the wheel in a fresh environment and run the quickstart offline
+        run: |
+          python -m venv /tmp/clean
+          /tmp/clean/bin/pip install dist/*.whl
+          cd /tmp && /tmp/clean/bin/python -I - <<'PY'
+          import adaptive_harness, tempfile, os
+          from adaptive_harness import AdaptiveHarness, HarnessConfig, PersistenceConfig
+          assert "site-packages" in adaptive_harness.__file__
+          h = AdaptiveHarness(provider="mock", model="m",
+                              config=HarnessConfig(persistence=PersistenceConfig(path=os.path.join(tempfile.mkdtemp(), "h.db"))))
+          r = h.generate("What is 17 times 23?", check=lambda t: True)
+          print(adaptive_harness.__version__, r.trace.strategy_id, r.trace.evaluation_status)
+          PY
