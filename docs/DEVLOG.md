@@ -21,8 +21,17 @@
 - **Phase 11, orchestration, plus the known-limits pass:** done.
 - **Independent evaluation and fixes F1–F16:** done (`docs/reports/evaluation_2026-11-10.md`,
   `docs/reports/reevaluation_2026-11-10.md`). F13 needs the owner to delete two leftover files.
-- **Phase 12, experimental validation:** in progress. Pre-registered (commit e0e6a90) before any data;
-  collection running.
+- **Phase 12, experimental validation:** in progress.
+  - Pre-registered (commit e0e6a90) before any data; amendments 1–5.
+  - Calibration complete for all three models; selections frozen.
+  - Held-out: qwen3.8-27b running on its free tier. gpt-oss-20b and Gemini are paused until OpenRouter credit is
+    added.
+  - Interim, exploratory findings: `experiments/results/v1/interim_calibration_findings.md`.
+- **Phase 13, release preparation:** done, nothing published.
+  - CI: the first run (commit 7dbcfdc) passed on Python 3.10–3.13 (Linux), 3.13 (macOS), the Docker sandbox job
+    and the build/clean-install job.
+  - Documents: changelog, contribution guide, API reference, licence review, release checklist.
+  - Builds: wheel and sdist built from tracked files only.
 - Not implemented yet: Phases 12–13.
 
 ## 2026-11-09 to 2026-11-10: Phase 0
