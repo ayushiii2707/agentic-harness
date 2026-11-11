@@ -20,9 +20,9 @@ from typing import Literal
 from ..evaluation import Evaluator
 from ..evaluation.builtin import BulletConstraints, JsonFields, ReferenceAnswer, UnitTests
 
-Split = Literal["calibration", "heldout"]
+Split = Literal["calibration", "heldout", "examples", "pilot"]
 SUITE_VERSION = "2"  # 2: instructions suite added; UnitTests v2 (unavailable imports fail)
-_SEEDS = {"calibration": 1001, "heldout": 2002}
+_SEEDS = {"calibration": 1001, "heldout": 2002, "examples": 3003, "pilot": 4004}
 
 
 @dataclass(frozen=True)
@@ -83,10 +83,19 @@ def _math_problem(rng: random.Random) -> tuple[str, float]:
 
 
 def _excluded(split: Split, build: object) -> set[str]:
-    """Prompts of the calibration split, which the held-out split must never contain."""
+    """Prompts another split must never contain.
+
+    - Held-out excludes calibration (unchanged since version 1, so earlier held-out sets stay identical).
+    - ``examples`` (few-shot demonstrations) excludes calibration and held-out; ``pilot`` also excludes examples.
+    """
     if split == "calibration":
         return set()
-    return {t.prompt for t in build(split="calibration")}  # type: ignore[operator]
+    banned = {t.prompt for t in build(split="calibration")}  # type: ignore[operator]
+    if split in ("examples", "pilot"):
+        banned |= {t.prompt for t in build(split="heldout")}  # type: ignore[operator]
+    if split == "pilot":
+        banned |= {t.prompt for t in build(split="examples")}  # type: ignore[operator]
+    return banned
 
 
 def math_suite(n: int = 100, split: Split = "calibration") -> list[CalibrationTask]:

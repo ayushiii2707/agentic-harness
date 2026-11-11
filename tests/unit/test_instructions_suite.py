@@ -44,3 +44,23 @@ def test_each_violation_fails() -> None:
     }
     for why, text in bad.items():
         assert c.evaluate(text).status is EvalStatus.FAILURE, why
+
+
+def test_all_four_splits_are_disjoint_and_heldout_is_unchanged() -> None:
+    from adaptive_harness.calibration.suites import json_suite, math_suite
+
+    for build in (math_suite, json_suite, instructions_suite):
+        splits = {
+            s: {t.prompt for t in build(split=s)} for s in ("calibration", "heldout", "examples", "pilot")
+        }  # type: ignore[operator]
+        names = sorted(splits)
+        for i, a in enumerate(names):
+            for b in names[i + 1 :]:
+                assert not (splits[a] & splits[b]), (build.__name__, a, b)
+    # the held-out set used by experiment v1 must never change (content hash recorded 2026-11-11)
+    import hashlib
+
+    text = "".join(
+        t.prompt for build in (math_suite, json_suite, instructions_suite) for t in build(split="heldout")
+    )  # type: ignore[operator]
+    assert hashlib.sha256(text.encode()).hexdigest()[:16] == "8a7227aca87eb490"
