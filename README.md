@@ -16,14 +16,30 @@ says a change helps.
 > - background checks, streaming checks and tool pass-through;
 > - opt-in LLM helpers (a rewriter with an independent judge, and a classifier).
 >
-> Not built yet: the research experiments and the release work (Phases 12–13). See [docs/DESIGN.md](docs/DESIGN.md) and [docs/DEVLOG.md](docs/DEVLOG.md).
+> In progress: the pre-registered experiment ([experiments/](experiments/README.md)), whose results are not final.
+> The package has not been published; until it is, install it from source (below). See
+> [docs/DESIGN.md](docs/DESIGN.md) and [docs/DEVLOG.md](docs/DEVLOG.md).
 
-## Install (development)
+## Install
+
+Python 3.10–3.13. The package is not on PyPI yet; install it from source:
+
+```bash
+pip install "git+https://github.com/ayushiii2707/agentic-harness@feat/foundation-and-providers"
+```
+
+This needs read access to the repository if it is private. The development branch is currently the only branch.
+
+For development:
 
 ```bash
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 ```
+
+The code-test evaluator (`UnitTests`) needs Docker and the pinned image
+(`docker pull python:3.12-slim@sha256:aa943ce411423c7582288f18707ff66eddcbaeb510502d747a72aeb34f30d159`). Nothing
+else needs Docker.
 
 ## Quickstart
 
@@ -106,10 +122,24 @@ stored. See [env.example](env.example).
 Which adapters have been tested against the live service, and which only against recorded responses, is listed
 in [docs/PROVIDERS.md](docs/PROVIDERS.md).
 
+## Troubleshooting
+
+| Symptom | Cause and fix |
+|---|---|
+| `trace.strategy_id` is always `identity` | Expected until there is evidence. The harness learns only from `check=` or `feedback()`, and needs 30 outcomes per strategy before it switches. Use `h.preview(prompt).trace.reason` to see why |
+| `ConfigurationError: ... max_cost_per_call_usd > 0` | Paid calibration or helper models need a per-call cap and a budget (`BudgetConfig(total_usd=...)`); a $0 cap would let spending go untracked |
+| `QuotaExceededError` | The provider account has no credit or quota left. It is not retried; add credit, or use a free or local model |
+| `RateLimitError` after retries | A temporary limit. Wait and retry; calibration and experiments resume where they stopped |
+| Calls to a local Ollama time out | The first load of a large model can take minutes; raise `HTTPConfig(timeout_s=...)` |
+| `UnitTests` results are `evaluation_error` | Docker is not running or the pinned image is missing; code is never run outside the sandbox |
+| A setting seems ignored | Check `response.result.dropped_settings`: providers differ in which settings they accept |
+
 ## Documents
 
-- [Design](docs/DESIGN.md), [Related work](docs/RELATED_WORK.md), [Decisions](docs/DECISIONS.md),
-  [Development log](docs/DEVLOG.md), [Data flows](docs/DATA_FLOWS.md)
+- [API reference](docs/API.md), [Design](docs/DESIGN.md), [Related work](docs/RELATED_WORK.md),
+  [Decisions](docs/DECISIONS.md), [Development log](docs/DEVLOG.md), [Data flows](docs/DATA_FLOWS.md),
+  [Providers](docs/PROVIDERS.md), [Licences](docs/LICENSES.md), [Release checklist](docs/RELEASE_CHECKLIST.md),
+  [Changelog](CHANGELOG.md), [Contributing](CONTRIBUTING.md)
 
 ## Licence
 
